@@ -2,7 +2,7 @@ from pyuvm import *
 import pyuvm
 from cocotb.triggers import ClockCycles
 import random
-from common.tinyalu_utils import TinyAluBfm
+from bfm import TinyAluBfm
 from common.tinyalu_ref import *
 from cocotb.clock import Clock
 import cocotb

@@ -1,6 +1,6 @@
 from pyuvm import uvm_driver
 from common.tinyalu_ref import *
-from common.tinyalu_utils import *
+from bfm import *
 
 
 class Driver(uvm_driver):
