@@ -11,7 +11,6 @@ from abc import abstractmethod
 import cocotb
 import pyuvm
 from cocotb.queue import Queue
-from common.tinyalu_ref import *
 
 
 class Bfm(metaclass=pyuvm.Singleton):
@@ -44,7 +43,7 @@ class Bfm(metaclass=pyuvm.Singleton):
         result = await self.output_monitor_queue.get()
         return result
 
-    async def set_input(self, value:AluInput) -> None:
+    async def set_input(self, value:object) -> None:
         """Sends an input transaction to the DUT.
 
         The values received will be written to the DUT, but they might be seen

@@ -13,9 +13,8 @@ Then, in the `report_phase()`, the checklist is compared against the whole
 
 from abc import abstractmethod
 
-from common.help import *
-from common.tinyalu_ref import *
-from pyuvm import *
+from common.help import config_db_get
+from pyuvm import UVMConfigItemNotFound, uvm_subscriber
 
 
 class Coverage(uvm_subscriber):
