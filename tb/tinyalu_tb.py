@@ -1,20 +1,32 @@
-from pyuvm import *
-import pyuvm
-from cocotb.triggers import ClockCycles, FallingEdge
-from common.tinyalu_ref import *
-from cocotb.clock import Clock
 import cocotb
-from cocotb.queue import QueueEmpty
-from driver import Driver
-from scoreboard import Scoreboard
-from coverage import Coverage
-from sequencer import *
-from monitor import InputMonitor, OutputMonitor
-from common.help import *
+import pyuvm
 from bfm import Bfm
-from common.tinyalu_ref import *
+from cocotb.clock import Clock
+from cocotb.queue import QueueEmpty
+from cocotb.triggers import ClockCycles, FallingEdge
+from common.help import *
+from coverage import Coverage
+from driver import Driver
+from monitor import InputMonitor, OutputMonitor
+from pyuvm import *
+from scoreboard import Scoreboard
+from sequencer import *
+
+def golden_ref(op: AluSeqItem):
+    """DUT's golden reference model"""
+    if op.mode == AluMode.ADD:
+        result = op.a + op.b
+    elif op.mode == AluMode.AND:
+        result = op.a & op.b
+    elif op.mode == AluMode.XOR:
+        result = op.a ^ op.b
+    elif op.mode == AluMode.MUL:
+        result = op.a * op.b
+    return result
+
 
 class TinyAluBfm(Bfm):
+    """TinyAlu BFM"""
     async def reset(self):
         await FallingEdge(self.dut.clk)
         self.dut.reset_n.value = 0
@@ -36,9 +48,9 @@ class TinyAluBfm(Bfm):
             if st == 0 and dn == 0:
                 try:
                     op = self.input_driver_queue.get_nowait()
-                    self.dut.A.value = op.value.aa
-                    self.dut.B.value = op.value.bb
-                    self.dut.op.value = op.value.mode
+                    self.dut.A.value = op.a
+                    self.dut.B.value = op.b
+                    self.dut.op.value = op.mode
                     self.dut.start.value = 1
                 except QueueEmpty:
                     continue
@@ -51,10 +63,10 @@ class TinyAluBfm(Bfm):
             await FallingEdge(self.dut.clk)
             start = int(self.dut.start.value)
             if start == 1 and prev_start == 0:
-                cmd_tuple = AluInput(
+                cmd_tuple = AluSeqItem(
                     int(self.dut.A.value),
                     int(self.dut.B.value),
-                    int(self.dut.op.value))
+                    AluMode(self.dut.op.value))
                 self.input_monitor_queue.put_nowait(cmd_tuple)
             prev_start = start
 
