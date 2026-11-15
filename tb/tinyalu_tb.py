@@ -8,16 +8,21 @@ from driver import Driver
 from scoreboard import Scoreboard
 from coverage import Coverage
 from sequencer import *
-from monitor import Monitor
+from monitor import InputMonitor, OutputMonitor
+from bfm import TinyAluBfm
+from common.help import *
 
 class AluEnv(uvm_env):
 
     def build_phase(self):
         self.seqr = uvm_sequencer("seqr", self)
-        ConfigDB().set(None, "*", "SEQR", self.seqr)
+        config_db_set("SEQR", self.seqr)
+        config_db_set("coverage_set", set(AluMode))
+        config_db_set("bfm", TinyAluBfm())
+
         self.driver = Driver("driver", self)
-        self.cmd_mon = Monitor("cmd_mon", self, "get_cmd")
-        self.result_mon = Monitor("result_mon", self, "get_result")
+        self.cmd_mon = InputMonitor("cmd_mon", self)
+        self.result_mon = OutputMonitor("result_mon", self)
         self.scoreboard = Scoreboard("scoreboard", self)
         self.coverage = Coverage("coverage", self)
         c = Clock(cocotb.top.clk, 4, "ns")
@@ -27,12 +32,10 @@ class AluEnv(uvm_env):
         self.driver.seq_item_port.connect(
             self.seqr.seq_item_export)
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
+        self.result_mon.ap.connect(self.scoreboard.result_export)
+
+
         self.cmd_mon.ap.connect(self.coverage.analysis_export)
-        self.result_mon.ap.connect(
-            self.scoreboard.result_export)
-
-
-
 
 @pyuvm.test()
 class BaseTest(uvm_test):
@@ -40,7 +43,7 @@ class BaseTest(uvm_test):
         self.env = AluEnv("env", self)
 
     def end_of_elaboration_phase(self):
-        self.seqr = ConfigDB().get(self, "", "SEQR")
+        self.seqr = config_db_get("SEQR")
 
     async def run_phase(self):
         self.raise_objection()
