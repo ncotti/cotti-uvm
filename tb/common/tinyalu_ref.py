@@ -16,8 +16,8 @@ class AluInput:
     bb: int = 0
     mode: AluMode = AluMode.ADD
 
-def dut_golden_ref(op: AluInput):
-    """DUT golden reference model"""
+def golden_ref(op: AluInput):
+    """DUT's golden reference model"""
     if op.mode == AluMode.ADD:
         result = op.aa + op.bb
     elif op.mode == AluMode.AND:

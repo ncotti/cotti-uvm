@@ -12,6 +12,7 @@ from sequencer import *
 from monitor import InputMonitor, OutputMonitor
 from common.help import *
 from bfm import Bfm
+from common.tinyalu_ref import *
 
 class TinyAluBfm(Bfm):
     async def reset(self):
@@ -81,23 +82,23 @@ class AluEnv(uvm_env):
         config_db_set("coverage_set", set(AluMode))
         config_db_set("bfm", TinyAluBfm())
         config_db_set("coverage_percentage", 100)
+        config_db_set("golden_ref", golden_ref)
 
         self.driver = Driver("driver", self)
-        self.cmd_mon = InputMonitor("cmd_mon", self)
-        self.result_mon = OutputMonitor("result_mon", self)
+        self.input_monitor = InputMonitor("input_monitor", self)
+        self.output_monitor = OutputMonitor("output_monitor", self)
         self.scoreboard = Scoreboard("scoreboard", self)
         self.coverage = TinyAluCoverage("coverage", self)
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
     def connect_phase(self):
-        self.driver.seq_item_port.connect(
-            self.seqr.seq_item_export)
-        self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
-        self.result_mon.ap.connect(self.scoreboard.result_export)
+        self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
+        self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
+        self.input_monitor.ap.connect(self.coverage.analysis_export)
 
-        self.cmd_mon.ap.connect(self.coverage.analysis_export)
+        self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
 
 @pyuvm.test()
 class BaseTest(uvm_test):
