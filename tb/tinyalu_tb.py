@@ -2,32 +2,25 @@ from pyuvm import *
 import pyuvm
 from cocotb.triggers import ClockCycles
 import random
-from common.tinyalu_utils import TinyAluBfm, Ops, alu_prediction
+from common.tinyalu_utils import TinyAluBfm, Ops, alu_prediction, AluInput
 from cocotb.clock import Clock
 import cocotb
 
-
-# # UVM sequences
-# ## Driver
-
-# Figure 2: The Driver refactored to work with sequences
 class Driver(uvm_driver):
     def start_of_simulation_phase(self):
         self.bfm = TinyAluBfm()
 
     async def run_phase(self):
         await self.bfm.reset()
-        self.bfm.start_tasks()
+        self.bfm.start()
         while True:
             cmd = await self.seq_item_port.get_next_item()
-            await self.bfm.send_op(cmd.A, cmd.B, cmd.op)
+            input = AluInput(cmd.A, cmd.B, cmd.op)
+            await self.bfm.send_op(input)
             self.seq_item_port.item_done()
 
-
-# ## Connecting the driver to the sequencer
 class AluEnv(uvm_env):
 
-    # Figure 4: Instantiating the sequencer in the environment
     def build_phase(self):
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
@@ -39,7 +32,6 @@ class AluEnv(uvm_env):
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
-    # Figure 5: Connecting the sequencer to the driver
     def connect_phase(self):
         self.driver.seq_item_port.connect(
             self.seqr.seq_item_export)
@@ -49,8 +41,6 @@ class AluEnv(uvm_env):
             self.scoreboard.result_export)
 
 
-# ## AluSeqItem
-# Figure 6: Defining an ALU command as a sequence item
 class AluSeqItem(uvm_sequence_item):
 
     def __init__(self, name, aa, bb, op):
@@ -59,7 +49,6 @@ class AluSeqItem(uvm_sequence_item):
         self.B = bb
         self.op = Ops(op)
 
-    # Figure 7: The __eq__ and __str__ methods in a sequence item
     def __eq__(self, other):
         same = self.A == other.A and self.B == other.B and self.op == other.op
         return same
@@ -69,10 +58,6 @@ class AluSeqItem(uvm_sequence_item):
         OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
 
 
-# ## Creating sequences
-# ### BaseSeq
-
-# Figure 9: The BaseSeq contains the common body() method
 class BaseSeq(uvm_sequence):
 
     async def body(self):
@@ -86,8 +71,6 @@ class BaseSeq(uvm_sequence):
         pass
 
 
-# ### RandomSeq and MaxSeq
-# Figure 10: Extending BaseSeq to create the random and maximum stimulus
 class RandomSeq(BaseSeq):
     def set_operands(self, tr):
         tr.A = random.randint(0, 255)
@@ -99,11 +82,6 @@ class MaxSeq(BaseSeq):
         tr.A = 0xff
         tr.B = 0xff
 
-
-# ## Starting a sequence in a test
-# ### BaseTest
-
-# Figure 11: All tests use the same environment and need a sequence
 @pyuvm.test()
 class BaseTest(uvm_test):
     def build_phase(self):
@@ -112,7 +90,6 @@ class BaseTest(uvm_test):
     def end_of_elaboration_phase(self):
         self.seqr = ConfigDB().get(self, "", "SEQR")
 
-    # Figure 12: All tests start the sequence
     async def run_phase(self):
         self.raise_objection()
         seq = BaseSeq.create("seq")
@@ -121,8 +98,6 @@ class BaseTest(uvm_test):
         self.drop_objection()
 
 
-# ### RandomTest and MaxTest
-# Figure 14: Overriding BaseSeq to get random stimulus and all ones
 @pyuvm.test()
 class RandomTest(BaseTest):
     def start_of_simulation_phase(self):
