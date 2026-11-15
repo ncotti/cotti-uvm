@@ -1,41 +1,8 @@
 import cocotb
 from cocotb.triggers import FallingEdge
 from cocotb.queue import QueueEmpty, Queue
-import enum
+from common.tinyalu_ref import *
 import pyuvm
-
-from dataclasses import dataclass
-
-
-@enum.unique
-class Ops(enum.IntEnum):
-    """Legal ops for the TinyALU"""
-    ADD = 1
-    AND = 2
-    XOR = 3
-    MUL = 4
-
-
-def alu_prediction(A, B, op):
-    """Python model of the TinyALU"""
-    assert isinstance(op, Ops), "The tinyalu op must be of type Ops"
-    if op == Ops.ADD:
-        result = A + B
-    elif op == Ops.AND:
-        result = A & B
-    elif op == Ops.XOR:
-        result = A ^ B
-    elif op == Ops.MUL:
-        result = A * B
-    return result
-
-
-@dataclass(slots=True)
-class AluInput:
-    aa: int = 0
-    bb: int = 0
-    mode: Ops = Ops.ADD
-
 
 class TinyAluBfm(metaclass=pyuvm.Singleton):
     """BFM: Bus functional model
@@ -84,9 +51,10 @@ class TinyAluBfm(metaclass=pyuvm.Singleton):
             await FallingEdge(self.dut.clk)
             start = int(self.dut.start.value)
             if start == 1 and prev_start == 0:
-                cmd_tuple = (int(self.dut.A.value),
-                             int(self.dut.B.value),
-                             int(self.dut.op.value))
+                cmd_tuple = AluInput(
+                    int(self.dut.A.value),
+                    int(self.dut.B.value),
+                    int(self.dut.op.value))
                 self.cmd_mon_queue.put_nowait(cmd_tuple)
             prev_start = start
 
@@ -103,9 +71,9 @@ class TinyAluBfm(metaclass=pyuvm.Singleton):
             if st == 0 and dn == 0:
                 try:
                     op = self.cmd_driver_queue.get_nowait()
-                    self.dut.A.value = op.aa
-                    self.dut.B.value = op.bb
-                    self.dut.op.value = op.mode
+                    self.dut.A.value = op.value.aa
+                    self.dut.B.value = op.value.bb
+                    self.dut.op.value = op.value.mode
                     self.dut.start.value = 1
                 except QueueEmpty:
                     continue

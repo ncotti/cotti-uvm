@@ -1,0 +1,16 @@
+from pyuvm import uvm_driver
+from common.tinyalu_ref import *
+from common.tinyalu_utils import *
+
+
+class Driver(uvm_driver):
+    def start_of_simulation_phase(self):
+        self.bfm = TinyAluBfm()
+
+    async def run_phase(self):
+        await self.bfm.reset()
+        self.bfm.start()
+        while True:
+            cmd = await self.seq_item_port.get_next_item()
+            await self.bfm.send_op(cmd)
+            self.seq_item_port.item_done()
