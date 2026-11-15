@@ -1,3 +1,13 @@
+"""
+Driver
+
+The driver exposes a `seq_item_port` from where it receives sequence items,
+which then sends to the DUT through the BFM.
+
+The only thing the driver needs is a copy of the BFM, which
+must be put by the environment during its `build_phase()` in the ConfigDB.
+"""
+
 from bfm import *
 from common.help import *
 from common.tinyalu_ref import *
@@ -8,9 +18,6 @@ class Driver(uvm_driver):
     """
     The driver is responsible for getting sequence items and feeding them
     to the DUT through the BFM (Bus Functional Model).
-
-    The only thing the driver needs is a copy of the BFM, which
-    must be put by the environment during its `build_phase()` in the ConfigDB.
     """
 
     def start_of_simulation_phase(self):

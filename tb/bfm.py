@@ -1,15 +1,21 @@
-import cocotb
-from cocotb.queue import Queue
-from common.tinyalu_ref import *
-import pyuvm
+"""
+BFM: Bus functional model
+
+The BFM is responsible for direct access to the DUT's signals.
+No other class in the whole UVM testbench is allowed to access the
+DUT, or to wait on simulation time or clock edges.
+"""
+
 from abc import abstractmethod
 
-class Bfm(metaclass=pyuvm.Singleton):
-    """BFM: Bus functional model
+import cocotb
+import pyuvm
+from cocotb.queue import Queue
+from common.tinyalu_ref import *
 
-    The BFM is responsible for direct access to the DUT's signals.
-    No other class in the whole UVM testbench is allowed to access the
-    DUT, or to wait on simulation time or clock edges.
+
+class Bfm(metaclass=pyuvm.Singleton):
+    """BFM: Bus functional model base class.
 
     This is an abstract class, and each DUT must define its own BFM.
     """
@@ -62,12 +68,14 @@ class Bfm(metaclass=pyuvm.Singleton):
     @abstractmethod
     async def reset(self):
         """DUT's reset condition."""
+        raise (NotImplementedError)
 
     @abstractmethod
     async def input_driver(self):
         """Waits for sequence items to be fed from the `input_driver_queue()`
         and excites the DUT.
         """
+        raise (NotImplementedError)
 
     @abstractmethod
     async def input_monitor(self):
@@ -77,12 +85,14 @@ class Bfm(metaclass=pyuvm.Singleton):
         Its the user's choice as to what a "valid transaction" entails, and
         its data type.
         """
+        raise (NotImplementedError)
 
     @abstractmethod
     async def output_monitor(self):
         """Reads the DUT's output signals and sends out any valid "transaction"
         through the `self.output_monitor_queue`.
 
-        Its the user's choice as to what a "valid transaction" entails, and
+        It is the user's choice as to what a "valid transaction" entails, and
         its data type.
         """
+        raise (NotImplementedError)

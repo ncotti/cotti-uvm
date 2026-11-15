@@ -1,7 +1,21 @@
-from pyuvm import *
-from common.help import *
+"""
+Monitor
 
-class InputMonitor(uvm_component):
+A monitor purpose is to interact with the BFM and generate analysis ports
+for other parts of the UVM testbench to analyze the data.
+
+Two basic monitors are provided, which read the input and output signals
+from the BFM.
+
+The only thing the monitor needs is a copy of the BFM, which
+must be put by the environment during its `build_phase()` in the ConfigDB.
+"""
+
+from common.help import *
+from pyuvm import *
+
+
+class InputMonitor(uvm_monitor):
     """Reads the BFM input and posts it through an analysis port."""
 
     def end_of_elaboration_phase(self):
@@ -18,7 +32,7 @@ class InputMonitor(uvm_component):
             datum = await self.bfm.get_input()
             self.ap.write(datum)
 
-class OutputMonitor(uvm_component):
+class OutputMonitor(uvm_monitor):
     """Reads the BFM output and posts it through an analysis port."""
     def end_of_elaboration_phase(self):
         self.bfm = config_db_get("bfm")

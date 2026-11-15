@@ -1,7 +1,7 @@
 from pyuvm import *
 from common.tinyalu_ref import *
 
-class Scoreboard(uvm_component):
+class Scoreboard(uvm_scoreboard):
 
     def build_phase(self):
         self.cmd_fifo = uvm_tlm_analysis_fifo("cmd_fifo", self)

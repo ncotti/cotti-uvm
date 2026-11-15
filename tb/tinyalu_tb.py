@@ -68,6 +68,11 @@ class TinyAluBfm(Bfm):
             prev_done = done
 
 
+class TinyAluCoverage(Coverage):
+    """Coverage for the TinyAlu"""
+    def write(self, cmd):
+        self.coverage_checklist.add(cmd.mode)
+
 class AluEnv(uvm_env):
 
     def build_phase(self):
@@ -75,12 +80,13 @@ class AluEnv(uvm_env):
         config_db_set("SEQR", self.seqr)
         config_db_set("coverage_set", set(AluMode))
         config_db_set("bfm", TinyAluBfm())
+        config_db_set("coverage_percentage", 100)
 
         self.driver = Driver("driver", self)
         self.cmd_mon = InputMonitor("cmd_mon", self)
         self.result_mon = OutputMonitor("result_mon", self)
         self.scoreboard = Scoreboard("scoreboard", self)
-        self.coverage = Coverage("coverage", self)
+        self.coverage = TinyAluCoverage("coverage", self)
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
