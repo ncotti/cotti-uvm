@@ -9,7 +9,6 @@ class Coverage(uvm_subscriber):
     report phase.
     """
     def end_of_elaboration_phase(self):
-
         self.coverage_set = config_db_get("coverage_set")
         self.cvg = set()
 

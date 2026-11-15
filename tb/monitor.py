@@ -1,11 +1,11 @@
 from pyuvm import *
-from bfm import *
+from common.help import *
 
 class InputMonitor(uvm_component):
     """Reads the BFM input and posts it through an analysis port."""
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
-        self.bfm = TinyAluBfm()
+
+    def end_of_elaboration_phase(self):
+        self.bfm = config_db_get("bfm")
 
     def build_phase(self):
         """Create the analysis port"""
@@ -15,14 +15,13 @@ class InputMonitor(uvm_component):
         """Wait for an input transaction to be published from the BFM, and
             write it to the analysis port."""
         while True:
-            datum = await self.bfm.get_cmd()
+            datum = await self.bfm.get_input()
             self.ap.write(datum)
 
 class OutputMonitor(uvm_component):
     """Reads the BFM output and posts it through an analysis port."""
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
-        self.bfm = TinyAluBfm()
+    def end_of_elaboration_phase(self):
+        self.bfm = config_db_get("bfm")
 
     def build_phase(self):
         """Create the analysis port"""
@@ -32,5 +31,5 @@ class OutputMonitor(uvm_component):
         """Wait for an output result to be published from the BFM, and
         write it to the analysis port."""
         while True:
-            datum = await self.bfm.get_result()
+            datum = await self.bfm.get_output()
             self.ap.write(datum)

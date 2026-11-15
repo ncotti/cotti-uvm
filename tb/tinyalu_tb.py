@@ -1,16 +1,72 @@
 from pyuvm import *
 import pyuvm
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, FallingEdge
 from common.tinyalu_ref import *
 from cocotb.clock import Clock
 import cocotb
+from cocotb.queue import QueueEmpty
 from driver import Driver
 from scoreboard import Scoreboard
 from coverage import Coverage
 from sequencer import *
 from monitor import InputMonitor, OutputMonitor
-from bfm import TinyAluBfm
 from common.help import *
+from bfm import Bfm
+
+class TinyAluBfm(Bfm):
+    async def reset(self):
+        await FallingEdge(self.dut.clk)
+        self.dut.reset_n.value = 0
+        self.dut.A.value = 0
+        self.dut.B.value = 0
+        self.dut.op.value = 0
+        await FallingEdge(self.dut.clk)
+        self.dut.reset_n.value = 1
+
+    async def input_driver(self):
+        self.dut.start.value = 0
+        self.dut.A.value = 0
+        self.dut.B.value = 0
+        self.dut.op.value = 0
+        while True:
+            await FallingEdge(self.dut.clk)
+            st = int(self.dut.start.value)
+            dn = int(self.dut.done.value)
+            if st == 0 and dn == 0:
+                try:
+                    op = self.input_driver_queue.get_nowait()
+                    self.dut.A.value = op.value.aa
+                    self.dut.B.value = op.value.bb
+                    self.dut.op.value = op.value.mode
+                    self.dut.start.value = 1
+                except QueueEmpty:
+                    continue
+            elif st == 1 and dn == 1:
+                self.dut.start.value = 0
+
+    async def input_monitor(self):
+        prev_start = 0
+        while True:
+            await FallingEdge(self.dut.clk)
+            start = int(self.dut.start.value)
+            if start == 1 and prev_start == 0:
+                cmd_tuple = AluInput(
+                    int(self.dut.A.value),
+                    int(self.dut.B.value),
+                    int(self.dut.op.value))
+                self.input_monitor_queue.put_nowait(cmd_tuple)
+            prev_start = start
+
+    async def output_monitor(self):
+        prev_done = 0
+        while True:
+            await FallingEdge(self.dut.clk)
+            done = int(self.dut.done.value)
+            if prev_done == 0 and done == 1:
+                result = int(self.dut.result.value)
+                self.output_monitor_queue.put_nowait(result)
+            prev_done = done
+
 
 class AluEnv(uvm_env):
 
