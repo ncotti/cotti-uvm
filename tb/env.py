@@ -16,12 +16,14 @@ class Env(uvm_env):
         bfm: Bfm,
         golden_ref: Callable[[uvm_sequence_item], object],
         name:str="env",
+        coverage_type: type[Coverage] | None = None,
         coverage_set: set | None = None,
         coverage_percentage: float=100.0):
 
         super().__init__(name, parent)
         self.bfm = bfm
         self.golden_ref = golden_ref
+        self.coverage_type = coverage_type
         self.coverage_set = coverage_set
         self.coverage_percentage = coverage_percentage
 
@@ -37,8 +39,8 @@ class Env(uvm_env):
         self.scoreboard = Scoreboard("scoreboard", self)
         self.sequencer = Sequencer("sequencer", self)
 
-        if (self.coverage_set):
-            self.coverage = Coverage.create("coverage", self)
+        if (self.coverage_type and self.coverage_set):
+            self.coverage = self.coverage_type("coverage", self)
         else:
             self.logger.warning("No coverage was provided.")
 

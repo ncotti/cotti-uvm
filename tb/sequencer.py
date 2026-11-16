@@ -59,7 +59,6 @@ class Sequencer(uvm_component):
         self.sequencer = uvm_sequencer(f"{self.get_name()}_sequencer", self)
         self.seq_item_export = self.sequencer.seq_item_export
 
-
     async def run_phase(self):
         self.sequence = Sequence.create(f"{self.get_name()}_sequence")
         await self.sequence.start(self.sequencer)

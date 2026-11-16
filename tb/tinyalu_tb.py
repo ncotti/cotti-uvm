@@ -117,7 +117,12 @@ class TinyAluCoverage(Coverage):
 
 class BaseTest(uvm_test):
     def build_phase(self):
-        self.env = Env(self, TinyAluBfm(), golden_ref=golden_ref)
+        self.env = Env(self,
+            TinyAluBfm(),
+            golden_ref=golden_ref,
+            coverage_type=TinyAluCoverage,
+            coverage_set=list(AluMode)
+            )
 
     async def run_phase(self):
         self.raise_objection()
@@ -155,12 +160,9 @@ class MaxSeq(Sequence):
 class RandomTest(BaseTest):
     def start_of_simulation_phase(self):
         uvm_factory().set_type_override_by_type(Sequence, RandomSeq)
-        uvm_factory().set_type_override_by_type(Coverage, TinyAluCoverage)
 
 
 @pyuvm.test()
 class MaxTest(BaseTest):
     def start_of_simulation_phase(self):
         uvm_factory().set_type_override_by_type(Sequence, MaxSeq)
-        uvm_factory().set_type_override_by_type(Coverage, TinyAluCoverage)
-
