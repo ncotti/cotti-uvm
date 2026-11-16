@@ -89,8 +89,6 @@ class TinyAluCoverage(Coverage):
 class AluEnv(uvm_env):
 
     def build_phase(self):
-        self.seqr = uvm_sequencer("seqr", self)
-        config_db_set("SEQR", self.seqr)
         config_db_set("coverage_set", set(AluMode))
         config_db_set("bfm", TinyAluBfm())
         config_db_set("coverage_percentage", 100)
@@ -101,43 +99,50 @@ class AluEnv(uvm_env):
         self.output_monitor = OutputMonitor("output_monitor", self)
         self.scoreboard = Scoreboard("scoreboard", self)
         self.coverage = TinyAluCoverage("coverage", self)
+        self.sequencer = Sequencer("sequencer", self)
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
     def connect_phase(self):
-        self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+        self.driver.seq_item_port.connect(self.sequencer.seq_item_export)
 
         self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
         self.input_monitor.ap.connect(self.coverage.analysis_export)
 
         self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
 
-@pyuvm.test()
 class BaseTest(uvm_test):
     def build_phase(self):
         self.env = AluEnv("env", self)
 
-    def end_of_elaboration_phase(self):
-        self.seqr = config_db_get("SEQR")
-
     async def run_phase(self):
         self.raise_objection()
-        seq = BaseSeq.create("seq")
-        await seq.start(self.seqr)
         await ClockCycles(cocotb.top.clk, 50)  # to do last transaction
         self.drop_objection()
+
+
+class RandomSeq(Sequence):
+    def new_item(self, item: AluSeqItem) -> None:
+        item.a = random.randint(0, 255)
+        item.b = random.randint(0, 255)
+
+
+class MaxSeq(Sequence):
+    def new_item(self, item: AluSeqItem) -> None:
+        item.a = 0xff
+        item.b = 0xff
 
 
 @pyuvm.test()
 class RandomTest(BaseTest):
     def start_of_simulation_phase(self):
-        uvm_factory().set_type_override_by_type(BaseSeq, RandomSeq)
+        uvm_factory().set_type_override_by_type(Sequence, RandomSeq)
 
 
 @pyuvm.test()
 class MaxTest(BaseTest):
     def start_of_simulation_phase(self):
-        uvm_factory().set_type_override_by_type(BaseSeq, MaxSeq)
+        uvm_factory().set_type_override_by_type(Sequence, MaxSeq)
 
 
 
