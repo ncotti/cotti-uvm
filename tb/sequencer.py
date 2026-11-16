@@ -26,64 +26,33 @@ the data.
 """
 
 
-import random
 from abc import abstractmethod
-from enum import IntEnum
+from collections.abc import Iterable
 
-from pyuvm import *
-
-
-class AluMode(IntEnum):
-    """Legal ops for the TinyALU"""
-    ADD = 1
-    AND = 2
-    XOR = 3
-    MUL = 4
+from pyuvm import uvm_component, uvm_sequence, uvm_sequence_item, uvm_sequencer
 
 
-class AluSeqItem(uvm_sequence_item):
-    """TinyAlu sequence item"""
-
-    def __init__(self, a:int=0, b:int=0, mode:AluMode=AluMode.ADD):
-        super().__init__("alu_sequence_item")
-        self.a = a
-        self.b = b
-        self.mode = mode
-
-    def __eq__(self, other):
-        return (
-            (self.a == other.a) and
-            (self.b == other.b) and
-            (self.mode == other.mode)
-        )
-
-    def __str__(self):
-        return f"{self.get_name()} : A: 0x{self.a:02x} \
-        OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}"
-
+class BaseItem(uvm_sequence_item):
+    pass
 
 class Sequence(uvm_sequence):
-
     async def body(self):
-        for mode in list(AluMode):
-            item = AluSeqItem()
-
+        for item in self.items():
             # Waits until the Driver asks for a new sequence item,
             # i.e., awaits the `seq_item_port`.
             await self.start_item(item)
-
-            # Prepare the input value
-            self.new_item(item)
-            item.mode = mode
 
             # Send the sequence item through the `seq_item_export`
             await self.finish_item(item)
 
     @abstractmethod
-    def new_item(self, item) -> None:
-        """This method must """
-        raise(NotImplementedError)
+    def items(self) -> Iterable[uvm_sequence_item]:
+        """
+        This function should return an iterable list of `uvm_sequence_item`.
 
+        All items will be sent to the Driver and feed into the DUT.
+        """
+        raise(NotImplementedError)
 
 class Sequencer(uvm_component):
     def build_phase(self):

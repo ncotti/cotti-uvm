@@ -11,6 +11,36 @@ from monitor import InputMonitor, OutputMonitor
 from pyuvm import *
 from scoreboard import Scoreboard
 from sequencer import *
+import random
+from enum import IntEnum
+
+class AluMode(IntEnum):
+    """Legal ops for the TinyALU"""
+    ADD = 1
+    AND = 2
+    XOR = 3
+    MUL = 4
+
+
+class AluSeqItem(uvm_sequence_item):
+    """TinyAlu sequence item"""
+
+    def __init__(self, a:int=0, b:int=0, mode:AluMode=AluMode.ADD):
+        super().__init__("alu_sequence_item")
+        self.a = a
+        self.b = b
+        self.mode = mode
+
+    def __eq__(self, other):
+        return (
+            (self.a == other.a) and
+            (self.b == other.b) and
+            (self.mode == other.mode)
+        )
+
+    def __str__(self):
+        return f"{self.get_name()} : A: 0x{self.a:02x} \
+        OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}"
 
 def golden_ref(op: AluSeqItem):
     """DUT's golden reference model"""
@@ -122,15 +152,29 @@ class BaseTest(uvm_test):
 
 
 class RandomSeq(Sequence):
-    def new_item(self, item: AluSeqItem) -> None:
-        item.a = random.randint(0, 255)
-        item.b = random.randint(0, 255)
+    def items(self) -> list[AluSeqItem]:
+        out = []
+        for mode in list(AluMode):
+            item = AluSeqItem(
+                a=random.randint(0, 255),
+                b=random.randint(0, 255),
+                mode=mode
+            )
+            out.append(item)
+        return out
 
 
 class MaxSeq(Sequence):
-    def new_item(self, item: AluSeqItem) -> None:
-        item.a = 0xff
-        item.b = 0xff
+    def items(self) -> list[AluSeqItem]:
+        out = []
+        for mode in list(AluMode):
+            item = AluSeqItem(
+                a=0xFF,
+                b=0xFF,
+                mode=mode
+            )
+            out.append(item)
+        return out
 
 
 @pyuvm.test()
