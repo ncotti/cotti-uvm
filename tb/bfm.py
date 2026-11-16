@@ -10,6 +10,7 @@ from abc import abstractmethod
 
 import cocotb
 import pyuvm
+from cocotb.clock import Clock
 from cocotb.queue import Queue
 
 
@@ -27,11 +28,23 @@ class Bfm(metaclass=pyuvm.Singleton):
         input which should generate a meaningful output.
         3. `output_monitor_queue`: Constantly reads the output, and puts in
         the queue the result of a "transaction".
+
+        Also, starts the BFM co-routines in the background.
+
+        The BFM consists of three processes:
+        1. Input data injector.
+        2. Input signals' monitor.
+        3. Output signals' monitor.
         """
         self.dut = cocotb.top
         self.input_driver_queue = Queue(maxsize=1)
         self.input_monitor_queue = Queue(maxsize=0)
         self.output_monitor_queue = Queue(maxsize=0)
+
+        cocotb.start_soon(self.input_driver())
+        cocotb.start_soon(self.input_monitor())
+        cocotb.start_soon(self.output_monitor())
+        self.on_start()
 
     async def get_input(self):
         """Retrieves the input transaction"""
@@ -51,18 +64,15 @@ class Bfm(metaclass=pyuvm.Singleton):
         """
         await self.input_driver_queue.put(value)
 
+    @abstractmethod
+    def on_start(self):
+        """Hook to be exectued right after the BFM is created.
 
-    def start(self):
-        """Starts the BFM co-routines in the background.
-
-        The BFM consists of three processes:
-        1. Input data injector.
-        2. Input signals' monitor.
-        3. Output signals' monitor.
+        In this hook you normally place continous or constant signals, such
+        as a clock.
         """
-        cocotb.start_soon(self.input_driver())
-        cocotb.start_soon(self.input_monitor())
-        cocotb.start_soon(self.output_monitor())
+        c = Clock(cocotb.top.clk, 4, "ns")
+        c.start()
 
     @abstractmethod
     async def reset(self):

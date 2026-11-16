@@ -118,8 +118,6 @@ class TinyAluCoverage(Coverage):
 class BaseTest(uvm_test):
     def build_phase(self):
         self.env = Env(self, TinyAluBfm(), golden_ref=golden_ref)
-        c = Clock(cocotb.top.clk, 4, "ns")
-        c.start()
 
     async def run_phase(self):
         self.raise_objection()

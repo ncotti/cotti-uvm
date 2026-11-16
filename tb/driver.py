@@ -30,7 +30,6 @@ class Driver(uvm_driver):
         3. Receive sequence items and send them to the BFM.
         """
         await self.bfm.reset()
-        self.bfm.start()
         while True:
             cmd = await self.seq_item_port.get_next_item()
             await self.bfm.set_input(cmd)
