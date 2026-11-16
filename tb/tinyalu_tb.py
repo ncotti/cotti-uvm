@@ -6,13 +6,11 @@ from cocotb.queue import QueueEmpty
 from cocotb.triggers import ClockCycles, FallingEdge
 from common.help import *
 from coverage import Coverage
-from driver import Driver
-from monitor import InputMonitor, OutputMonitor
 from pyuvm import *
-from scoreboard import Scoreboard
 from sequencer import *
 import random
 from enum import IntEnum
+from env import Env
 
 class AluMode(IntEnum):
     """Legal ops for the TinyALU"""
@@ -20,7 +18,6 @@ class AluMode(IntEnum):
     AND = 2
     XOR = 3
     MUL = 4
-
 
 class AluSeqItem(uvm_sequence_item):
     """TinyAlu sequence item"""
@@ -116,34 +113,13 @@ class TinyAluCoverage(Coverage):
     def write(self, cmd):
         self.coverage_checklist.add(cmd.mode)
 
-class AluEnv(uvm_env):
 
-    def build_phase(self):
-        config_db_set("coverage_set", set(AluMode))
-        config_db_set("bfm", TinyAluBfm())
-        config_db_set("coverage_percentage", 100)
-        config_db_set("golden_ref", golden_ref)
-
-        self.driver = Driver("driver", self)
-        self.input_monitor = InputMonitor("input_monitor", self)
-        self.output_monitor = OutputMonitor("output_monitor", self)
-        self.scoreboard = Scoreboard("scoreboard", self)
-        self.coverage = TinyAluCoverage("coverage", self)
-        self.sequencer = Sequencer("sequencer", self)
-        c = Clock(cocotb.top.clk, 4, "ns")
-        c.start()
-
-    def connect_phase(self):
-        self.driver.seq_item_port.connect(self.sequencer.seq_item_export)
-
-        self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
-        self.input_monitor.ap.connect(self.coverage.analysis_export)
-
-        self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
 
 class BaseTest(uvm_test):
     def build_phase(self):
-        self.env = AluEnv("env", self)
+        self.env = Env(self, TinyAluBfm(), golden_ref=golden_ref)
+        c = Clock(cocotb.top.clk, 4, "ns")
+        c.start()
 
     async def run_phase(self):
         self.raise_objection()
@@ -181,12 +157,12 @@ class MaxSeq(Sequence):
 class RandomTest(BaseTest):
     def start_of_simulation_phase(self):
         uvm_factory().set_type_override_by_type(Sequence, RandomSeq)
+        uvm_factory().set_type_override_by_type(Coverage, TinyAluCoverage)
 
 
 @pyuvm.test()
 class MaxTest(BaseTest):
     def start_of_simulation_phase(self):
         uvm_factory().set_type_override_by_type(Sequence, MaxSeq)
-
-
+        uvm_factory().set_type_override_by_type(Coverage, TinyAluCoverage)
 
