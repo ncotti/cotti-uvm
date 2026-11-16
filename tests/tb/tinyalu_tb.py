@@ -1,16 +1,15 @@
 import cocotb
 import pyuvm
-from bfm import Bfm
+from cotti_uvm.bfm import Bfm
 from cocotb.clock import Clock
 from cocotb.queue import QueueEmpty
 from cocotb.triggers import ClockCycles, FallingEdge
-from common.help import *
-from coverage import Coverage
+from cotti_uvm.coverage import Coverage
 from pyuvm import *
-from sequencer import *
+from cotti_uvm.sequencer import *
 import random
 from enum import IntEnum
-from env import Env
+from cotti_uvm.env import Env
 
 class AluMode(IntEnum):
     """Legal ops for the TinyALU"""

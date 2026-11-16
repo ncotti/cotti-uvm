@@ -8,13 +8,14 @@ Its job is to read the input, use the DUT's golden reference to get the
 expected output, and then compare it with the actual output.
 """
 
-from common.help import config_db_get
 from pyuvm import (
     UVMConfigItemNotFound,
     uvm_get_port,
     uvm_scoreboard,
     uvm_tlm_analysis_fifo,
 )
+
+from cotti_uvm.common.help import config_db_get
 
 
 class Scoreboard(uvm_scoreboard):

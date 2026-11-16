@@ -11,8 +11,9 @@ The only thing the monitor needs is a copy of the BFM, which
 must be put by the environment during its `build_phase()` in the ConfigDB.
 """
 
-from common.help import config_db_get
 from pyuvm import uvm_analysis_port, uvm_monitor
+
+from cotti_uvm.common.help import config_db_get
 
 
 class InputMonitor(uvm_monitor):

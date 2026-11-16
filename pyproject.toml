@@ -1,0 +1,23 @@
+[project]
+name = "cotti-uvm"
+version = "0.0.1"
+authors = [
+  { name="Cotti Nicolas Gabriel", email="ngcotti@gmail.com" },
+]
+description = "Simplified UVM classes for RTL testbenches"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/ncotti/cotti-uvm"
+Issues = "https://github.com/ncotti/cotti-uvm/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"

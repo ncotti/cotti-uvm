@@ -13,8 +13,9 @@ Then, in the `report_phase()`, the checklist is compared against the whole
 
 from abc import abstractmethod
 
-from common.help import config_db_get
 from pyuvm import UVMConfigItemNotFound, uvm_subscriber
+
+from cotti_uvm.common.help import config_db_get
 
 
 class Coverage(uvm_subscriber):

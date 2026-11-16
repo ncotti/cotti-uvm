@@ -8,8 +8,9 @@ The only thing the driver needs is a copy of the BFM, which
 must be put by the environment during its `build_phase()` in the ConfigDB.
 """
 
-from common.help import config_db_get
 from pyuvm import uvm_driver
+
+from cotti_uvm.common.help import config_db_get
 
 
 class Driver(uvm_driver):

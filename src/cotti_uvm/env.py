@@ -1,13 +1,14 @@
 from collections.abc import Callable
 
-from bfm import Bfm
-from common.help import config_db_set
-from coverage import Coverage
-from driver import Driver
-from monitor import InputMonitor, OutputMonitor
 from pyuvm import uvm_env, uvm_sequence_item
-from scoreboard import Scoreboard
-from sequencer import Sequencer
+
+from cotti_uvm.bfm import Bfm
+from cotti_uvm.common.help import config_db_set
+from cotti_uvm.coverage import Coverage
+from cotti_uvm.driver import Driver
+from cotti_uvm.monitor import InputMonitor, OutputMonitor
+from cotti_uvm.scoreboard import Scoreboard
+from cotti_uvm.sequencer import Sequencer
 
 
 class Env(uvm_env):
