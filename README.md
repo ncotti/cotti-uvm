@@ -19,6 +19,7 @@ pip install cotti-uvm
 
 ```bash
 python3 -m pip install --upgrade build twine
+rm -rf dist
 python3 -m build
 ```
 
