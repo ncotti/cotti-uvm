@@ -11,6 +11,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "pyuvm>=5.0.0",
+  "cocotb~=2.1"
+]
 license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 
