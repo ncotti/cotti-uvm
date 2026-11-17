@@ -10,10 +10,11 @@ and add the specific transaction done to the coverage checklist.
 Then, in the `report_phase()`, the checklist is compared against the whole
 `coverage_set`, and the coverage percentage is determined.
 """
+from __future__ import annotations
 
 from abc import abstractmethod
 
-from pyuvm import uvm_subscriber
+from pyuvm import uvm_subscriber, uvm_sequence_item
 from enum import Enum
 
 
@@ -60,10 +61,30 @@ class Coverage(uvm_subscriber):
             )
 
     @abstractmethod
-    def write(self, value):
-        """Given the input `value`, this function should determine if any
-         element from the `coverage` has been fulfilled, and add it to the
-         `self.coverage_checklist`
+    def item_to_coverage(self, item: uvm_sequence_item) -> Enum | None:
+        """This function must read the item provided and return which
+        coverage case is representing, or `None`.
+
+        The following is an example that checks whether the input argument "a"
+        was tested for negative, positive and zero values:
+
+        ```
+        if (item.a == 0):
+            return ZERO_COVERAGE
+        elif (item.a < 0)
+            return NEGATIVE_COVERAGE
+        elif (item.a > 0)
+            return POSITIVE_COVERAGE
+        ```
         """
-        raise (NotImplementedError("Coverage must implement the write() method."))
+        raise (NotImplementedError("Coverage must implement the item_to_coverage() method."))
+
+    @abstractmethod
+    def write(self, item):
+        """The write method is called whenever a new element arrives from the
+        analysis port.
+        """
+        coverage_element = self.item_to_coverage(item)
+        if (coverage_element is not None):
+            self.coverage_checklist.add(coverage_element)
 

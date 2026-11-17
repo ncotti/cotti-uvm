@@ -119,8 +119,8 @@ class TinyAluCoverage(Coverage):
     coverage_enum = AluMode
     min_coverage_percentage = 100
 
-    def write(self, cmd):
-        self.coverage_checklist.add(cmd.mode)
+    def item_to_coverage(self, item):
+        return item.mode
 
 
 class RandomSeq(Sequence):
