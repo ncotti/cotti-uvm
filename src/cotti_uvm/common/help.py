@@ -25,3 +25,20 @@ def config_db_set(key: str, value: object) -> None:
     global dictionary.
     """
     ConfigDB().set(None, "*", key, value)
+
+
+def read_hex(filename:str) -> list:
+    """Reads a memory HEX file, and returns a list with its contents
+
+    Memory files are expected to be formatted as one hex value per row, like this:
+
+    ```
+    0x12345678
+    0x11111111
+    0x22222222
+    0x33333333
+    0x44444444
+    ```
+    """
+    with open(filename, "r") as file:
+        return [int(line.strip(), 16) for line in file if line.strip()]
