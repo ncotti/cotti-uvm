@@ -25,3 +25,6 @@ Issues = "https://github.com/ncotti/cotti-uvm/issues"
 [build-system]
 requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

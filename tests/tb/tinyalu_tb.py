@@ -6,12 +6,8 @@ import pyuvm
 from cocotb.clock import Clock
 from cocotb.queue import QueueEmpty
 from cocotb.triggers import FallingEdge
-from pyuvm import *
 
-from cotti_uvm.bfm import Bfm
-from cotti_uvm.coverage import Coverage
-from cotti_uvm.sequencer import *
-from cotti_uvm.tester import Tester
+from cotti_uvm import Bfm, Coverage, Item, Sequence, Tester
 
 
 class AluMode(IntEnum):
@@ -21,7 +17,7 @@ class AluMode(IntEnum):
     XOR = 3
     MUL = 4
 
-class AluSeqItem(uvm_sequence_item):
+class AluSeqItem(Item):
     """TinyAlu sequence item"""
 
     def __init__(self, a:int=0, b:int=0, mode:AluMode=AluMode.ADD):

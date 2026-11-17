@@ -39,8 +39,30 @@ from pyuvm import (
 )
 
 
-class BaseItem(uvm_sequence_item):
-    pass
+class Item(uvm_sequence_item):
+    """This class is just a re-export of the `uvm_sequence_item`, but
+    with added constraints:
+
+    1. The user must define the __eq__() method.
+    2. The user must define the __str__() method.
+    3. The user must define its constructor in such a way that it can be
+    called without arguments, i.e., with all default values.
+    """
+
+    def __init__(self, name:str="sequence_item"):
+        """This constructor might be overriden, but you must call it with
+        super().__init__(), and the new constructor must not have
+        mandatory values.
+        """
+        super().__init__(name)
+
+    @abstractmethod
+    def __eq__(self, other) -> bool:
+        raise(NotImplementedError("Sequence items must define the __eq__() method."))
+
+    @abstractmethod
+    def __str__(self) -> str:
+        raise(NotImplementedError("Sequence items must define the __str__() method."))
 
 class Sequence(uvm_sequence):
     async def body(self):
