@@ -14,6 +14,7 @@ Then, in the `report_phase()`, the checklist is compared against the whole
 from abc import abstractmethod
 
 from pyuvm import uvm_subscriber
+from enum import Enum
 
 
 class Coverage(uvm_subscriber):
@@ -27,17 +28,18 @@ class Coverage(uvm_subscriber):
 
     # Minimum coverage required for the test to pass
     min_coverage_percentage :float = 100.0
-    coverage_set: set = None
+    coverage_enum: Enum = None
 
     def _check_attributes(self):
         if (self.min_coverage_percentage < 0 or self.min_coverage_percentage > 100):
             raise(ValueError(f"0 <= coverage_percentage <= 100, but was {self.min_coverage_percentage}."))
 
-        if (self.coverage_set is None):
-            raise(TypeError(f"Coverage set must be a set, but is {type(self.coverage_set)}"))
+        if not (isinstance(self.coverage_enum, type) and issubclass(self.coverage_enum, Enum)):
+            raise(TypeError(f"Coverage set must be an Enum, but is {type(self.coverage_enum)}"))
 
     def build_phase(self):
         self._check_attributes()
+        self.coverage = set(self.coverage_enum)
         self.coverage_checklist = set()
 
     def report_phase(self):
@@ -45,11 +47,11 @@ class Coverage(uvm_subscriber):
 
         The test will fail if the coverage goal was not achieved.
         """
-        percentage = (float(len(self.coverage_checklist)) / float(len(self.coverage_set))) * 100
+        percentage = (float(len(self.coverage_checklist)) / float(len(self.coverage))) * 100
         if (percentage < self.min_coverage_percentage):
             self.logger.error(
                 f"Coverage error: {percentage:.2f}% / {self.min_coverage_percentage:.2f}%.\n"
-                f"Missed: {self.coverage_set - self.coverage_checklist}"
+                f"Missed: {self.coverage - self.coverage_checklist}"
             )
             assert False
         else:
@@ -60,7 +62,7 @@ class Coverage(uvm_subscriber):
     @abstractmethod
     def write(self, value):
         """Given the input `value`, this function should determine if any
-         element from the `coverage_set` has been fulfilled, and add it to the
+         element from the `coverage` has been fulfilled, and add it to the
          `self.coverage_checklist`
         """
         raise (NotImplementedError("Coverage must implement the write() method."))

@@ -116,7 +116,7 @@ class TinyAluBfm(Bfm):
 
 class TinyAluCoverage(Coverage):
     """Coverage for the TinyAlu"""
-    coverage_set = set(AluMode)
+    coverage_enum = AluMode
     min_coverage_percentage = 100
 
     def write(self, cmd):
