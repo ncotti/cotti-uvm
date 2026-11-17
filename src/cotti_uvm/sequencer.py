@@ -62,6 +62,10 @@ class Sequence(uvm_sequence):
         raise(NotImplementedError)
 
 class Sequencer(uvm_component):
+    def __init__(self, name, parent, sequence_type: Sequence):
+        super().__init__(name, parent)
+        self.sequence_type = sequence_type
+
     def build_phase(self):
         self.sequencer = uvm_sequencer(f"{self.get_name()}_sequencer", self)
         self.seq_item_export = self.sequencer.seq_item_export
@@ -72,7 +76,7 @@ class Sequencer(uvm_component):
         self.sequencer_end_put_port.connect(self.fifo.put_export)
 
     async def run_phase(self):
-        self.sequence = Sequence.create(f"{self.get_name()}_sequence")
-        await self.sequence.start(self.sequencer)
+        sequence = self.sequence_type(f"{self.get_name()}_sequence")
+        await sequence.start(self.sequencer)
         await self.sequencer_end_put_port.put(True)
 

@@ -121,17 +121,6 @@ class TinyAluCoverage(Coverage):
         self.coverage_checklist.add(cmd.mode)
 
 
-class BaseTest(Tester):
-    def build_phase(self):
-        self.env = Env(self,
-            TinyAluBfm(),
-            golden_ref=golden_ref,
-            coverage_type=TinyAluCoverage,
-            coverage_set=list(AluMode),
-            end_delay_ns=40
-        )
-
-
 class RandomSeq(Sequence):
     def items(self) -> list[AluSeqItem]:
         out = []
@@ -159,12 +148,26 @@ class MaxSeq(Sequence):
 
 
 @pyuvm.test()
-class RandomTest(BaseTest):
-    def start_of_simulation_phase(self):
-        uvm_factory().set_type_override_by_type(Sequence, RandomSeq)
+class RandomTest(Tester):
+    def build_phase(self):
+        self.env = Env(self,
+            bfm=TinyAluBfm(),
+            golden_ref=golden_ref,
+            sequence_type=RandomSeq,
+            coverage_type=TinyAluCoverage,
+            coverage_set=list(AluMode),
+            end_delay_ns=40
+        )
 
 
 @pyuvm.test()
-class MaxTest(BaseTest):
-    def start_of_simulation_phase(self):
-        uvm_factory().set_type_override_by_type(Sequence, MaxSeq)
+class MaxTest(Tester):
+    def build_phase(self):
+        self.env = Env(self,
+            bfm=TinyAluBfm(),
+            golden_ref=golden_ref,
+            sequence_type=MaxSeq,
+            coverage_type=TinyAluCoverage,
+            coverage_set=list(AluMode),
+            end_delay_ns=40
+        )

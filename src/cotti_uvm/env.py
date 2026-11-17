@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 
 from cocotb.triggers import Timer
@@ -9,7 +11,7 @@ from cotti_uvm.coverage import Coverage
 from cotti_uvm.driver import Driver
 from cotti_uvm.monitor import InputMonitor, OutputMonitor
 from cotti_uvm.scoreboard import Scoreboard
-from cotti_uvm.sequencer import Sequencer
+from cotti_uvm.sequencer import Sequence, Sequencer
 
 
 class Env(uvm_env):
@@ -17,6 +19,7 @@ class Env(uvm_env):
         parent,
         bfm: Bfm,
         golden_ref: Callable[[uvm_sequence_item], object],
+        sequence_type: type[Sequence],
         name:str="env",
         coverage_type: type[Coverage] | None = None,
         coverage_set: set | None = None,
@@ -26,6 +29,7 @@ class Env(uvm_env):
         super().__init__(name, parent)
         self.bfm = bfm
         self.golden_ref = golden_ref
+        self.sequence_type = sequence_type
         self.coverage_type = coverage_type
         self.coverage_set = coverage_set
         self.coverage_percentage = coverage_percentage
@@ -41,7 +45,7 @@ class Env(uvm_env):
         self.input_monitor = InputMonitor("input_monitor", self)
         self.output_monitor = OutputMonitor("output_monitor", self)
         self.scoreboard = Scoreboard("scoreboard", self)
-        self.sequencer = Sequencer("sequencer", self)
+        self.sequencer = Sequencer("sequencer", self, self.sequence_type)
 
         if (self.coverage_type and self.coverage_set):
             self.coverage = self.coverage_type("coverage", self)
