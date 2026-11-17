@@ -10,7 +10,6 @@ from pyuvm import *
 
 from cotti_uvm.bfm import Bfm
 from cotti_uvm.coverage import Coverage
-from cotti_uvm.env import Env
 from cotti_uvm.sequencer import *
 from cotti_uvm.tester import Tester
 
@@ -117,6 +116,9 @@ class TinyAluBfm(Bfm):
 
 class TinyAluCoverage(Coverage):
     """Coverage for the TinyAlu"""
+    coverage_set = set(AluMode)
+    min_coverage_percentage = 100
+
     def write(self, cmd):
         self.coverage_checklist.add(cmd.mode)
 
@@ -149,12 +151,10 @@ class MaxSeq(Sequence):
 
 @pyuvm.test()
 class RandomTest(Tester):
-
     bfm = TinyAluBfm
     golden_ref = golden_ref
-    sequence_type = RandomSeq
+    sequence = RandomSeq
     coverage = TinyAluCoverage
-    coverage_set = list(AluMode)
     end_delay_ns = 40
 
 
@@ -162,7 +162,6 @@ class RandomTest(Tester):
 class MaxTest(Tester):
     bfm = TinyAluBfm
     golden_ref = golden_ref
-    sequence_type = MaxSeq
+    sequence = MaxSeq
     coverage = TinyAluCoverage
-    coverage_set = list(AluMode)
     end_delay_ns = 40

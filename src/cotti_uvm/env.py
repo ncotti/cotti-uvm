@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
 from cocotb.triggers import Timer
-from pyuvm import uvm_env, uvm_get_port, uvm_sequence_item
+from pyuvm import uvm_env, uvm_get_port
 
 from cotti_uvm.bfm import Bfm
 from cotti_uvm.common.help import config_db_set
@@ -17,32 +15,25 @@ from cotti_uvm.sequencer import Sequence, Sequencer
 class Env(uvm_env):
     def __init__(self,
         parent,
-        bfm: Bfm,
-        golden_ref: Callable[[uvm_sequence_item], object],
-        sequence_type: type[Sequence],
-        name:str="env",
-        coverage_type: type[Coverage] | None = None,
-        end_delay_ns: int=50):
+        sequence: type[Sequence],
+        coverage: type[Coverage] | None = None,
+        end_delay_ns: int=50,
+        name:str="env"):
 
         super().__init__(name, parent)
-        self.bfm = bfm
-        self.golden_ref = golden_ref
-        self.sequence_type = sequence_type
-        self.coverage_type = coverage_type
+        self.sequence = sequence
+        self.coverage = coverage
         self.end_delay_ns = end_delay_ns
 
     def build_phase(self):
-        config_db_set("bfm", self.bfm)
-        config_db_set("golden_ref", self.golden_ref)
-
         self.driver = Driver("driver", self)
         self.input_monitor = InputMonitor("input_monitor", self)
         self.output_monitor = OutputMonitor("output_monitor", self)
         self.scoreboard = Scoreboard("scoreboard", self)
-        self.sequencer = Sequencer("sequencer", self, self.sequence_type)
+        self.sequencer = Sequencer("sequencer", self, self.sequence)
 
-        if (self.coverage_type):
-            self.coverage = self.coverage_type("coverage", self)
+        if (self.coverage):
+            self.coverage = self.coverage("coverage", self)
         else:
             self.logger.warning("No coverage was provided.")
 
@@ -53,7 +44,7 @@ class Env(uvm_env):
 
         self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
 
-        if (self.coverage_type):
+        if (self.coverage):
             self.input_monitor.ap.connect(self.coverage.analysis_export)
 
         self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)

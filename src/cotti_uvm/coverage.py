@@ -2,7 +2,7 @@
 Coverage
 
 Coverage is tracked by the `coverage_set` received from the ConfigDB. The
-`coverate_set` is a Python set, which must hold an enum type `set(<enum_type>)`.
+`coverage_set` is a Python set, which must hold an enum type `set(<enum_type>)`.
 
 The user will read the input transactions from the analysis port,
 and add the specific transaction done to the coverage checklist.
@@ -13,9 +13,7 @@ Then, in the `report_phase()`, the checklist is compared against the whole
 
 from abc import abstractmethod
 
-from pyuvm import UVMConfigItemNotFound, uvm_subscriber
-
-from cotti_uvm.common.help import config_db_get
+from pyuvm import uvm_subscriber
 
 
 class Coverage(uvm_subscriber):
@@ -26,16 +24,20 @@ class Coverage(uvm_subscriber):
 
     It is an abstract class, the user must define the `write()` method.
     """
-    def end_of_elaboration_phase(self):
-        """Loads the `coverage_set` and the `coverage_percentage` from the
-        ConfigDB
-        """
-        self.coverage_set = config_db_get("coverage_set")
-        try:
-            self.min_coverage_percentage = float(config_db_get("coverage_percentage"))
-        except UVMConfigItemNotFound:
-            self.min_coverage_percentage = 100.0
 
+    # Minimum coverage required for the test to pass
+    min_coverage_percentage :float = 100.0
+    coverage_set: set = None
+
+    def _check_attributes(self):
+        if (self.min_coverage_percentage < 0 or self.min_coverage_percentage > 100):
+            raise(ValueError(f"0 <= coverage_percentage <= 100, but was {self.min_coverage_percentage}."))
+
+        if (self.coverage_set is None):
+            raise(TypeError(f"Coverage set must be a set, but is {type(self.coverage_set)}"))
+
+    def build_phase(self):
+        self._check_attributes()
         self.coverage_checklist = set()
 
     def report_phase(self):
@@ -54,7 +56,6 @@ class Coverage(uvm_subscriber):
             self.logger.info(
                 f"Coverage OK: {percentage:.2f}% / {self.min_coverage_percentage:.2f}%"
             )
-            assert True
 
     @abstractmethod
     def write(self, value):
@@ -62,5 +63,5 @@ class Coverage(uvm_subscriber):
          element from the `coverage_set` has been fulfilled, and add it to the
          `self.coverage_checklist`
         """
-        raise (NotImplementedError)
+        raise (NotImplementedError("Coverage must implement the write() method."))
 

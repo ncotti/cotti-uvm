@@ -21,7 +21,7 @@ class Driver(uvm_driver):
 
     def start_of_simulation_phase(self):
         """Get a valid BFM before starting the `run_phase()`."""
-        self.bfm = config_db_get("bfm")
+        self.bfm = config_db_get("bfm")()
 
     async def run_phase(self):
         """Perform the following actions, as defined in the BFM:

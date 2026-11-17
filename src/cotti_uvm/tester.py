@@ -1,19 +1,19 @@
-from abc import abstractmethod
+import inspect
 
 from pyuvm import uvm_test
-from cotti_uvm.env import Env
-import inspect
+
 from cotti_uvm.bfm import Bfm
 from cotti_uvm.common.help import config_db_set
+from cotti_uvm.env import Env
+from cotti_uvm.sequencer import Sequence
+
 
 class Tester(uvm_test):
 
     bfm = None
     golden_ref = None
-    sequence_type = None
+    sequence = None
     coverage = None
-    coverage_set = None
-    coverage_percentage = 100.0
     end_delay_ns = 1
 
     def build_phase(self):
@@ -23,15 +23,14 @@ class Tester(uvm_test):
         """
         self._check_attributes()
 
-        config_db_set("coverage_set", self.coverage_set)
-        config_db_set("coverage_percentage", self.coverage_percentage)
+        config_db_set("bfm", self.bfm)
+
         golden_ref = inspect.getattr_static(self, "golden_ref")
+        config_db_set("golden_ref", golden_ref)
 
         self.env = Env(self,
-            bfm=self.bfm(),
-            golden_ref=golden_ref,
-            sequence_type=self.sequence_type,
-            coverage_type=self.coverage,
+            sequence=self.sequence,
+            coverage=self.coverage,
             end_delay_ns=self.end_delay_ns
         )
 
@@ -46,6 +45,10 @@ class Tester(uvm_test):
         # `golden_ref` is defined and is a callable function
         if self.golden_ref is None:
             raise(TypeError("Golden reference function must be defined"))
+
+        # Sequence must be defined
+        if not (isinstance(self.sequence, type) and issubclass(self.sequence, Sequence)):
+            raise(TypeError("A sequence must be provided."))
 
         # Delay must be at least 1ns
         self.end_delay_ns = self.end_delay_ns if (self.end_delay_ns > 0) else 1

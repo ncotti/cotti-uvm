@@ -20,7 +20,7 @@ class InputMonitor(uvm_monitor):
     """Reads the BFM input and posts it through an analysis port."""
 
     def end_of_elaboration_phase(self):
-        self.bfm = config_db_get("bfm")
+        self.bfm = config_db_get("bfm")()
 
     def build_phase(self):
         """Create the analysis port"""
@@ -36,7 +36,7 @@ class InputMonitor(uvm_monitor):
 class OutputMonitor(uvm_monitor):
     """Reads the BFM output and posts it through an analysis port."""
     def end_of_elaboration_phase(self):
-        self.bfm = config_db_get("bfm")
+        self.bfm = config_db_get("bfm")()
 
     def build_phase(self):
         """Create the analysis port"""

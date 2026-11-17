@@ -59,7 +59,7 @@ class Sequence(uvm_sequence):
 
         All items will be sent to the Driver and feed into the DUT.
         """
-        raise(NotImplementedError)
+        raise(NotImplementedError("Sequence must implement the items() method."))
 
 class Sequencer(uvm_component):
     def __init__(self, name, parent, sequence_type: Sequence):

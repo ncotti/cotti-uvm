@@ -65,9 +65,9 @@ class Bfm(metaclass=pyuvm.Singleton):
 
     @abstractmethod
     def on_start(self):
-        """Hook to be exectued right after the BFM is created.
+        """Hook to be executed right after the BFM is created.
 
-        In this hook you normally place continous or constant signals, such
+        In this hook you normally place continuous or constant signals, such
         as a clock.
         """
 
@@ -80,7 +80,7 @@ class Bfm(metaclass=pyuvm.Singleton):
         """Waits for sequence items to be fed from the `input_driver_queue()`
         and excites the DUT.
         """
-        raise (NotImplementedError)
+        raise (NotImplementedError("BFM must implement input_driver()."))
 
     @abstractmethod
     async def input_monitor(self):
@@ -90,7 +90,7 @@ class Bfm(metaclass=pyuvm.Singleton):
         Its the user's choice as to what a "valid transaction" entails, and
         its data type.
         """
-        raise (NotImplementedError)
+        raise (NotImplementedError("BFM must implement input_monitor()."))
 
     @abstractmethod
     async def output_monitor(self):
@@ -100,4 +100,4 @@ class Bfm(metaclass=pyuvm.Singleton):
         It is the user's choice as to what a "valid transaction" entails, and
         its data type.
         """
-        raise (NotImplementedError)
+        raise (NotImplementedError("BFM must implement output_monitor()."))
