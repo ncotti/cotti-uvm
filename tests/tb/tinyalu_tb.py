@@ -149,25 +149,20 @@ class MaxSeq(Sequence):
 
 @pyuvm.test()
 class RandomTest(Tester):
-    def build_phase(self):
-        self.env = Env(self,
-            bfm=TinyAluBfm(),
-            golden_ref=golden_ref,
-            sequence_type=RandomSeq,
-            coverage_type=TinyAluCoverage,
-            coverage_set=list(AluMode),
-            end_delay_ns=40
-        )
+
+    bfm = TinyAluBfm
+    golden_ref = golden_ref
+    sequence_type = RandomSeq
+    coverage = TinyAluCoverage
+    coverage_set = list(AluMode)
+    end_delay_ns = 40
 
 
 @pyuvm.test()
 class MaxTest(Tester):
-    def build_phase(self):
-        self.env = Env(self,
-            bfm=TinyAluBfm(),
-            golden_ref=golden_ref,
-            sequence_type=MaxSeq,
-            coverage_type=TinyAluCoverage,
-            coverage_set=list(AluMode),
-            end_delay_ns=40
-        )
+    bfm = TinyAluBfm
+    golden_ref = golden_ref
+    sequence_type = MaxSeq
+    coverage = TinyAluCoverage
+    coverage_set = list(AluMode)
+    end_delay_ns = 40

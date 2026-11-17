@@ -22,8 +22,6 @@ class Env(uvm_env):
         sequence_type: type[Sequence],
         name:str="env",
         coverage_type: type[Coverage] | None = None,
-        coverage_set: set | None = None,
-        coverage_percentage: float=100.0,
         end_delay_ns: int=50):
 
         super().__init__(name, parent)
@@ -31,14 +29,10 @@ class Env(uvm_env):
         self.golden_ref = golden_ref
         self.sequence_type = sequence_type
         self.coverage_type = coverage_type
-        self.coverage_set = coverage_set
-        self.coverage_percentage = coverage_percentage
-        self.end_delay_ns = end_delay_ns if (end_delay_ns > 0) else 1
+        self.end_delay_ns = end_delay_ns
 
     def build_phase(self):
-        config_db_set("coverage_set", self.coverage_set)
         config_db_set("bfm", self.bfm)
-        config_db_set("coverage_percentage", self.coverage_percentage)
         config_db_set("golden_ref", self.golden_ref)
 
         self.driver = Driver("driver", self)
@@ -47,7 +41,7 @@ class Env(uvm_env):
         self.scoreboard = Scoreboard("scoreboard", self)
         self.sequencer = Sequencer("sequencer", self, self.sequence_type)
 
-        if (self.coverage_type and self.coverage_set):
+        if (self.coverage_type):
             self.coverage = self.coverage_type("coverage", self)
         else:
             self.logger.warning("No coverage was provided.")
@@ -59,7 +53,7 @@ class Env(uvm_env):
 
         self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
 
-        if (self.coverage_set):
+        if (self.coverage_type):
             self.input_monitor.ap.connect(self.coverage.analysis_export)
 
         self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
