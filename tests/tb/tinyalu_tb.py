@@ -1,15 +1,19 @@
-import cocotb
-import pyuvm
-from cotti_uvm.bfm import Bfm
-from cocotb.clock import Clock
-from cocotb.queue import QueueEmpty
-from cocotb.triggers import ClockCycles, FallingEdge
-from cotti_uvm.coverage import Coverage
-from pyuvm import *
-from cotti_uvm.sequencer import *
 import random
 from enum import IntEnum
+
+import cocotb
+import pyuvm
+from cocotb.clock import Clock
+from cocotb.queue import QueueEmpty
+from cocotb.triggers import FallingEdge
+from pyuvm import *
+
+from cotti_uvm.bfm import Bfm
+from cotti_uvm.coverage import Coverage
 from cotti_uvm.env import Env
+from cotti_uvm.sequencer import *
+from cotti_uvm.tester import Tester
+
 
 class AluMode(IntEnum):
     """Legal ops for the TinyALU"""
@@ -62,6 +66,10 @@ class TinyAluBfm(Bfm):
         await FallingEdge(self.dut.clk)
         self.dut.reset_n.value = 1
 
+    def on_start(self):
+        c = Clock(cocotb.top.clk, 4, "ns")
+        c.start()
+
     async def input_driver(self):
         self.dut.start.value = 0
         self.dut.A.value = 0
@@ -113,20 +121,15 @@ class TinyAluCoverage(Coverage):
         self.coverage_checklist.add(cmd.mode)
 
 
-
-class BaseTest(uvm_test):
+class BaseTest(Tester):
     def build_phase(self):
         self.env = Env(self,
             TinyAluBfm(),
             golden_ref=golden_ref,
             coverage_type=TinyAluCoverage,
-            coverage_set=list(AluMode)
-            )
-
-    async def run_phase(self):
-        self.raise_objection()
-        await ClockCycles(cocotb.top.clk, 50)  # to do last transaction
-        self.drop_objection()
+            coverage_set=list(AluMode),
+            end_delay_ns=40
+        )
 
 
 class RandomSeq(Sequence):

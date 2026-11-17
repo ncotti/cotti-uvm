@@ -59,7 +59,7 @@ class Coverage(uvm_subscriber):
     @abstractmethod
     def write(self, value):
         """Given the input `value`, this function should determine if any
-         element from the `coverage_set` has been fulfilled, and it to the
+         element from the `coverage_set` has been fulfilled, and add it to the
          `self.coverage_checklist`
         """
         raise (NotImplementedError)

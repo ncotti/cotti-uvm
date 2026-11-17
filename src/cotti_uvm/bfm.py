@@ -10,7 +10,6 @@ from abc import abstractmethod
 
 import cocotb
 import pyuvm
-from cocotb.clock import Clock
 from cocotb.queue import Queue
 
 
@@ -71,13 +70,10 @@ class Bfm(metaclass=pyuvm.Singleton):
         In this hook you normally place continous or constant signals, such
         as a clock.
         """
-        c = Clock(cocotb.top.clk, 4, "ns")
-        c.start()
 
     @abstractmethod
     async def reset(self):
         """DUT's reset condition."""
-        raise (NotImplementedError)
 
     @abstractmethod
     async def input_driver(self):

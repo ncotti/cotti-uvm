@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
-from pyuvm import uvm_env, uvm_sequence_item
+from cocotb.triggers import Timer
+from pyuvm import uvm_env, uvm_get_port, uvm_sequence_item
 
 from cotti_uvm.bfm import Bfm
 from cotti_uvm.common.help import config_db_set
@@ -19,7 +20,8 @@ class Env(uvm_env):
         name:str="env",
         coverage_type: type[Coverage] | None = None,
         coverage_set: set | None = None,
-        coverage_percentage: float=100.0):
+        coverage_percentage: float=100.0,
+        end_delay_ns: int=50):
 
         super().__init__(name, parent)
         self.bfm = bfm
@@ -27,6 +29,7 @@ class Env(uvm_env):
         self.coverage_type = coverage_type
         self.coverage_set = coverage_set
         self.coverage_percentage = coverage_percentage
+        self.end_delay_ns = end_delay_ns if (end_delay_ns > 0) else 1
 
     def build_phase(self):
         config_db_set("coverage_set", self.coverage_set)
@@ -45,6 +48,8 @@ class Env(uvm_env):
         else:
             self.logger.warning("No coverage was provided.")
 
+        self.sequencer_end_get_port = uvm_get_port("sequencer_end_get_port", self)
+
     def connect_phase(self):
         self.driver.seq_item_port.connect(self.sequencer.seq_item_export)
 
@@ -54,3 +59,11 @@ class Env(uvm_env):
             self.input_monitor.ap.connect(self.coverage.analysis_export)
 
         self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
+
+        self.sequencer_end_get_port.connect(self.sequencer.fifo.get_export)
+
+    async def run_phase(self):
+        self.raise_objection()
+        await self.sequencer_end_get_port.get()
+        await Timer(self.end_delay_ns, "ns")
+        self.drop_objection()

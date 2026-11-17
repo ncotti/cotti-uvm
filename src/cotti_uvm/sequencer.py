@@ -29,7 +29,14 @@ the data.
 from abc import abstractmethod
 from collections.abc import Iterable
 
-from pyuvm import uvm_component, uvm_sequence, uvm_sequence_item, uvm_sequencer
+from pyuvm import (
+    uvm_component,
+    uvm_put_port,
+    uvm_sequence,
+    uvm_sequence_item,
+    uvm_sequencer,
+    uvm_tlm_fifo,
+)
 
 
 class BaseItem(uvm_sequence_item):
@@ -58,7 +65,14 @@ class Sequencer(uvm_component):
     def build_phase(self):
         self.sequencer = uvm_sequencer(f"{self.get_name()}_sequencer", self)
         self.seq_item_export = self.sequencer.seq_item_export
+        self.fifo = uvm_tlm_fifo("sequencer_tlm_fifo", self)
+        self.sequencer_end_put_port = uvm_put_port("sequencer_end_put_port", self)
+
+    def connect_phase(self):
+        self.sequencer_end_put_port.connect(self.fifo.put_export)
 
     async def run_phase(self):
         self.sequence = Sequence.create(f"{self.get_name()}_sequence")
         await self.sequence.start(self.sequencer)
+        await self.sequencer_end_put_port.put(True)
+
