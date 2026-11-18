@@ -68,7 +68,12 @@ class Bfm(metaclass=pyuvm.Singleton):
         """Hook to be executed right after the BFM is created.
 
         In this hook you normally place continuous or constant signals, such
-        as a clock.
+        as a clock, e.g.:
+
+        ```
+        c = Clock(cocotb.top.clk, 2, "ns")
+        c.start()
+        ```
         """
 
     @abstractmethod
@@ -77,8 +82,25 @@ class Bfm(metaclass=pyuvm.Singleton):
 
     @abstractmethod
     async def input_driver(self):
-        """Waits for sequence items to be fed from the `input_driver_queue()`
+        """Waits for sequence items to be fed from the `input_driver_queue`
         and excites the DUT.
+
+        This function must fulfill two requisites:
+
+        1. It must execute in a `while True:`, i.e., it must not exit.
+        2. It retrieves sequence items by calling `self.input_driver_queue.get_nowait()`.
+
+        A standard implementation looks as follows:
+        ```
+        self.dut.a.value = 0
+        while True:
+            await FallingEdge(self.dut.clk)
+            try:
+                item = self.input_driver_queue.get_nowait()
+            except QueueEmpty:
+                continue
+            self.dut.a.value = item.a
+        ```
         """
         raise (NotImplementedError("BFM must implement input_driver()."))
 
@@ -89,6 +111,22 @@ class Bfm(metaclass=pyuvm.Singleton):
 
         Its the user's choice as to what a "valid transaction" entails, and
         its data type.
+
+        This function must fulfill two requisites:
+
+        1. It must execute in a `while True:`, i.e., it must not exit.
+        2. It sends valid items to the input monitor by calling
+        `self.input_monitor_queue.put_nowait(item)`.
+
+        A standard implementation looks as follows:
+
+        ```
+        while True:
+            await FallingEdge(self.dut.clk)
+            if (bool(self.dut.new_cmd.value) == True):
+                item = Item(self.dut.a.value)
+                self.input_monitor_queue.put_nowait(item)
+        ```
         """
         raise (NotImplementedError("BFM must implement input_monitor()."))
 
@@ -99,5 +137,20 @@ class Bfm(metaclass=pyuvm.Singleton):
 
         It is the user's choice as to what a "valid transaction" entails, and
         its data type.
+
+        This function must fulfill two requisites:
+
+        1. It must execute in a `while True:`, i.e., it must not exit.
+        2. It sends valid items to the output monitor by calling
+        `self.output_monitor_queue.put_nowait(item)`.
+
+        A standard implementation looks as follows:
+
+        ```
+        while True:
+            await FallingEdge(self.dut.clk)
+            if (bool(self.dut.new_cmd_done.value) == True):
+                self.input_monitor_queue.put_nowait(self.dut.out.value)
+        ```
         """
         raise (NotImplementedError("BFM must implement output_monitor()."))
