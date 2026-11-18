@@ -65,14 +65,22 @@ class Bfm(metaclass=pyuvm.Singleton):
 
     @abstractmethod
     def on_start(self):
-        """Hook to be executed right after the BFM is created.
+        """Hook to be executed right after the BFM is created, i.e., at the
+        start of the `build_phase()` of the whole UVM testbench.
 
-        In this hook you normally place continuous or constant signals, such
-        as a clock, e.g.:
+        In this hook you normally drive continuous or constant signals, e.g.
+        the clock, but also add the DUT's parameters to the ConfigDB.
+
+        Parameters must be defined here, since the BFM is the only one allowed
+        to interact with the DUT.
+
+        The following is a typical implementation that starts the clock and also
+        sets the parameter `DATA_WIDTH` in the database.
 
         ```
         c = Clock(cocotb.top.clk, 2, "ns")
         c.start()
+        config_db_set("DATA_WIDTH", self.dut.DATA_WIDTH.value)
         ```
         """
 

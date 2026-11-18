@@ -23,7 +23,10 @@ class Tester(uvm_test):
         """
         self._check_attributes()
 
+        # Let the tester create the first instance of the BFM, so anything
+        # that was defined in its `on_start()` can be seen in other build phases.
         config_db_set("bfm", self.bfm)
+        self.bfm()
 
         golden_ref = inspect.getattr_static(self, "golden_ref")
         config_db_set("golden_ref", golden_ref)
