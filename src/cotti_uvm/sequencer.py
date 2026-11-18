@@ -27,7 +27,6 @@ one who initiates the transaction, and the driver is the one who is requesting
 the data.
 """
 
-
 from abc import abstractmethod
 from collections.abc import Iterable
 
@@ -51,7 +50,7 @@ class Item(uvm_sequence_item):
     called without arguments, i.e., with all default values.
     """
 
-    def __init__(self, name:str="sequence_item"):
+    def __init__(self, name: str = "sequence_item"):
         """This constructor might be overriden, but you must call it with
         super().__init__(), and the new constructor must not have
         mandatory values.
@@ -60,11 +59,20 @@ class Item(uvm_sequence_item):
 
     @abstractmethod
     def __eq__(self, other) -> bool:
-        raise(NotImplementedError("Sequence items must define the __eq__() method."))
+        raise (
+            NotImplementedError(
+                "Sequence items must define the __eq__() method."
+            )
+        )
 
     @abstractmethod
     def __str__(self) -> str:
-        raise(NotImplementedError("Sequence items must define the __str__() method."))
+        raise (
+            NotImplementedError(
+                "Sequence items must define the __str__() method."
+            )
+        )
+
 
 class Sequence(uvm_sequence):
     async def body(self):
@@ -83,7 +91,10 @@ class Sequence(uvm_sequence):
 
         All items will be sent to the Driver and feed into the DUT.
         """
-        raise(NotImplementedError("Sequence must implement the items() method."))
+        raise (
+            NotImplementedError("Sequence must implement the items() method.")
+        )
+
 
 class Sequencer(uvm_component):
     def __init__(self, name, parent, sequence_type: Sequence):
@@ -94,7 +105,9 @@ class Sequencer(uvm_component):
         self.sequencer = uvm_sequencer(f"{self.get_name()}_sequencer", self)
         self.seq_item_export = self.sequencer.seq_item_export
         self.fifo = uvm_tlm_fifo("sequencer_tlm_fifo", self)
-        self.sequencer_end_put_port = uvm_put_port("sequencer_end_put_port", self)
+        self.sequencer_end_put_port = uvm_put_port(
+            "sequencer_end_put_port", self
+        )
 
     def connect_phase(self):
         self.sequencer_end_put_port.connect(self.fifo.put_export)
@@ -103,4 +116,3 @@ class Sequencer(uvm_component):
         sequence = self.sequence_type(f"{self.get_name()}_sequence")
         await sequence.start(self.sequencer)
         await self.sequencer_end_put_port.put(True)
-

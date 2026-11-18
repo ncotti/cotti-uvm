@@ -32,8 +32,12 @@ class Scoreboard(uvm_scoreboard):
 
         Then, it creates two get ports to connect to those fifos from inside.
         """
-        self.input_monitor_fifo = uvm_tlm_analysis_fifo("input_monitor_fifo", self)
-        self.output_monitor_fifo = uvm_tlm_analysis_fifo("output_monitor_fifo", self)
+        self.input_monitor_fifo = uvm_tlm_analysis_fifo(
+            "input_monitor_fifo", self
+        )
+        self.output_monitor_fifo = uvm_tlm_analysis_fifo(
+            "output_monitor_fifo", self
+        )
 
         self.input_get_port = uvm_get_port("input_get_port", self)
         self.output_get_port = uvm_get_port("output_get_port", self)
@@ -84,7 +88,6 @@ class Scoreboard(uvm_scoreboard):
                 self.logger.error(self.on_fail(input, output, expected_output))
                 self.failed_count += 1
 
-
     def report_phase(self):
         """Checks the amount failed and passed tests.
 
@@ -95,17 +98,13 @@ class Scoreboard(uvm_scoreboard):
             f"Passed: {self.passed_count}. Failed: {self.failed_count}"
         )
 
-        if (self.failed_count > 0):
+        if self.failed_count > 0:
             self.logger.error(f"Failed tests: {self.failed_count}")
             assert False
 
     def default_on_pass(input, output) -> str:
         """Default string to be printed when output and expected output match"""
-        return (
-            f"PASSED:\n"
-            f"Input: {input}\n"
-            f"Output: {output}\n"
-        )
+        return f"PASSED:\nInput: {input}\nOutput: {output}\n"
 
     def default_on_fail(input, output, expected_output) -> str:
         """Default string to be printed when the output and expected output differ"""

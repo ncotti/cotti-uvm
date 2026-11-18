@@ -15,12 +15,14 @@ from cotti_uvm.sequencer import Sequence, Sequencer
 
 
 class Env(uvm_env):
-    def __init__(self,
+    def __init__(
+        self,
         parent,
         sequence: type[Sequence],
         coverage: type[Coverage] | None = None,
-        end_delay_ns: int=50,
-        name:str="env"):
+        end_delay_ns: int = 50,
+        name: str = "env",
+    ):
 
         super().__init__(name, parent)
         self.sequence = sequence
@@ -34,22 +36,28 @@ class Env(uvm_env):
         self.scoreboard = Scoreboard("scoreboard", self)
         self.sequencer = Sequencer("sequencer", self, self.sequence)
 
-        if (self.coverage):
+        if self.coverage:
             self.coverage = self.coverage("coverage", self)
         else:
             self.logger.warning("No coverage was provided.")
 
-        self.sequencer_end_get_port = uvm_get_port("sequencer_end_get_port", self)
+        self.sequencer_end_get_port = uvm_get_port(
+            "sequencer_end_get_port", self
+        )
 
     def connect_phase(self):
         self.driver.seq_item_port.connect(self.sequencer.seq_item_export)
 
-        self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
+        self.input_monitor.ap.connect(
+            self.scoreboard.input_monitor_fifo.analysis_export
+        )
 
-        if (self.coverage):
+        if self.coverage:
             self.input_monitor.ap.connect(self.coverage.analysis_export)
 
-        self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
+        self.output_monitor.ap.connect(
+            self.scoreboard.output_monitor_fifo.analysis_export
+        )
 
         self.sequencer_end_get_port.connect(self.sequencer.fifo.get_export)
 

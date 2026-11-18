@@ -15,5 +15,5 @@ __all__ = [
     "Tester",
     "config_db_get",
     "config_db_set",
-    "read_hex"
+    "read_hex",
 ]

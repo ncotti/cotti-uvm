@@ -11,7 +11,6 @@ from cotti_uvm.sequencer import Sequence
 
 
 class Tester(uvm_test):
-
     bfm = None
     golden_ref = None
     sequence = None
@@ -33,10 +32,11 @@ class Tester(uvm_test):
         golden_ref = inspect.getattr_static(self, "golden_ref")
         config_db_set("golden_ref", golden_ref)
 
-        self.env = Env(self,
+        self.env = Env(
+            self,
             sequence=self.sequence,
             coverage=self.coverage,
-            end_delay_ns=self.end_delay_ns
+            end_delay_ns=self.end_delay_ns,
         )
 
     def _check_attributes(self):
@@ -45,16 +45,22 @@ class Tester(uvm_test):
         """
         # `bfm` is a subclass of `Bfm`
         if not (isinstance(self.bfm, type) and issubclass(self.bfm, Bfm)):
-            raise(TypeError("When creating a tester, \"bfm\" should be a class inherited from \"Bfm\"."))
+            raise (
+                TypeError(
+                    'When creating a tester, "bfm" should be a class inherited from "Bfm".'
+                )
+            )
 
         # `golden_ref` is defined and is a callable function
         if self.golden_ref is None:
-            raise(TypeError("Golden reference function must be defined"))
+            raise (TypeError("Golden reference function must be defined"))
 
         # Sequence must be defined
-        if not (isinstance(self.sequence, type) and issubclass(self.sequence, Sequence)):
-            raise(TypeError("A sequence must be provided."))
+        if not (
+            isinstance(self.sequence, type)
+            and issubclass(self.sequence, Sequence)
+        ):
+            raise (TypeError("A sequence must be provided."))
 
         # Delay must be at least 1ns
         self.end_delay_ns = self.end_delay_ns if (self.end_delay_ns > 0) else 1
-

@@ -12,12 +12,13 @@ and add the specific transaction done to the coverage checklist.
 Then, in the `report_phase()`, the checklist is compared against the whole
 `coverage_set`, and the coverage percentage is determined.
 """
+
 from __future__ import annotations
 
 from abc import abstractmethod
-
-from pyuvm import uvm_subscriber, uvm_sequence_item
 from enum import Enum
+
+from pyuvm import uvm_sequence_item, uvm_subscriber
 
 
 class Coverage(uvm_subscriber):
@@ -30,15 +31,29 @@ class Coverage(uvm_subscriber):
     """
 
     # Minimum coverage required for the test to pass
-    min_coverage_percentage :float = 100.0
+    min_coverage_percentage: float = 100.0
     coverage_enum: Enum = None
 
     def _check_attributes(self):
-        if (self.min_coverage_percentage < 0 or self.min_coverage_percentage > 100):
-            raise(ValueError(f"0 <= coverage_percentage <= 100, but was {self.min_coverage_percentage}."))
+        if (
+            self.min_coverage_percentage < 0
+            or self.min_coverage_percentage > 100
+        ):
+            raise (
+                ValueError(
+                    f"0 <= coverage_percentage <= 100, but was {self.min_coverage_percentage}."
+                )
+            )
 
-        if not (isinstance(self.coverage_enum, type) and issubclass(self.coverage_enum, Enum)):
-            raise(TypeError(f"Coverage set must be an Enum, but is {type(self.coverage_enum)}"))
+        if not (
+            isinstance(self.coverage_enum, type)
+            and issubclass(self.coverage_enum, Enum)
+        ):
+            raise (
+                TypeError(
+                    f"Coverage set must be an Enum, but is {type(self.coverage_enum)}"
+                )
+            )
 
     def build_phase(self):
         self._check_attributes()
@@ -50,8 +65,10 @@ class Coverage(uvm_subscriber):
 
         The test will fail if the coverage goal was not achieved.
         """
-        percentage = (float(len(self.coverage_checklist)) / float(len(self.coverage))) * 100
-        if (percentage < self.min_coverage_percentage):
+        percentage = (
+            float(len(self.coverage_checklist)) / float(len(self.coverage))
+        ) * 100
+        if percentage < self.min_coverage_percentage:
             self.logger.error(
                 f"Coverage error: {percentage:.2f}% / {self.min_coverage_percentage:.2f}%.\n"
                 f"Missed: {self.coverage - self.coverage_checklist}"
@@ -79,7 +96,11 @@ class Coverage(uvm_subscriber):
             return POSITIVE_COVERAGE
         ```
         """
-        raise (NotImplementedError("Coverage must implement the item_to_coverage() method."))
+        raise (
+            NotImplementedError(
+                "Coverage must implement the item_to_coverage() method."
+            )
+        )
 
     @abstractmethod
     def write(self, item):
@@ -87,6 +108,5 @@ class Coverage(uvm_subscriber):
         analysis port.
         """
         coverage_element = self.item_to_coverage(item)
-        if (coverage_element is not None):
+        if coverage_element is not None:
             self.coverage_checklist.add(coverage_element)
-

@@ -15,15 +15,17 @@ from cotti_uvm import Bfm, Coverage, Item, Sequence, Tester
 
 class AluMode(IntEnum):
     """Legal ops for the TinyALU"""
+
     ADD = 1
     AND = 2
     XOR = 3
     MUL = 4
 
+
 class AluSeqItem(Item):
     """TinyAlu sequence item"""
 
-    def __init__(self, a:int=0, b:int=0, mode:AluMode=AluMode.ADD):
+    def __init__(self, a: int = 0, b: int = 0, mode: AluMode = AluMode.ADD):
         super().__init__("alu_sequence_item")
         self.a = a
         self.b = b
@@ -31,14 +33,15 @@ class AluSeqItem(Item):
 
     def __eq__(self, other):
         return (
-            (self.a == other.a) and
-            (self.b == other.b) and
-            (self.mode == other.mode)
+            (self.a == other.a)
+            and (self.b == other.b)
+            and (self.mode == other.mode)
         )
 
     def __str__(self):
         return f"{self.get_name()} : A: 0x{self.a:02x} \
         OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}"
+
 
 def golden_ref(op: AluSeqItem):
     """DUT's golden reference model"""
@@ -55,6 +58,7 @@ def golden_ref(op: AluSeqItem):
 
 class TinyAluBfm(Bfm):
     """TinyAlu BFM"""
+
     async def reset(self):
         await FallingEdge(self.dut.clk)
         self.dut.reset_n.value = 0
@@ -98,7 +102,8 @@ class TinyAluBfm(Bfm):
                 cmd_tuple = AluSeqItem(
                     int(self.dut.A.value),
                     int(self.dut.B.value),
-                    AluMode(self.dut.op.value))
+                    AluMode(self.dut.op.value),
+                )
                 self.input_monitor_queue.put_nowait(cmd_tuple)
             prev_start = start
 
@@ -115,6 +120,7 @@ class TinyAluBfm(Bfm):
 
 class TinyAluCoverage(Coverage):
     """Coverage for the TinyAlu"""
+
     coverage_enum = AluMode
     min_coverage_percentage = 100
 
@@ -127,9 +133,7 @@ class RandomSeq(Sequence):
         out = []
         for mode in list(AluMode):
             item = AluSeqItem(
-                a=random.randint(0, 255),
-                b=random.randint(0, 255),
-                mode=mode
+                a=random.randint(0, 255), b=random.randint(0, 255), mode=mode
             )
             out.append(item)
         return out
@@ -139,11 +143,7 @@ class MaxSeq(Sequence):
     def items(self) -> list[AluSeqItem]:
         out = []
         for mode in list(AluMode):
-            item = AluSeqItem(
-                a=0xFF,
-                b=0xFF,
-                mode=mode
-            )
+            item = AluSeqItem(a=0xFF, b=0xFF, mode=mode)
             out.append(item)
         return out
 

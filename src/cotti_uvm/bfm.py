@@ -20,6 +20,7 @@ class Bfm(metaclass=pyuvm.Singleton):
 
     This is an abstract class, and each DUT must define its own BFM.
     """
+
     def __init__(self):
         """Creates three queues for IO:
 
@@ -57,7 +58,7 @@ class Bfm(metaclass=pyuvm.Singleton):
         result = await self.output_monitor_queue.get()
         return result
 
-    async def set_input(self, value:object) -> None:
+    async def set_input(self, value: object) -> None:
         """Sends an input transaction to the DUT.
 
         The values received will be written to the DUT, but they might be seen
