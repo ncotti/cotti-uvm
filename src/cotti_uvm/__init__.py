@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026  Nicolas Gabriel Cotti
+
 from .bfm import Bfm
 from .common import config_db_get, config_db_set, read_hex
 from .coverage import Coverage
