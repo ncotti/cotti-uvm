@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026  Nicolas Gabriel Cotti
-"""
-Sequencer (Sequence + Sequencer)
+"""Sequencer (Sequence + Sequencer).
 
-This class is a superset of the confusing "sequence" and "sequencer" UVM classes.
+This class is a superset of the confusing "sequence" and "sequencer"
+UVM classes.
 
-The UVM standard defines an `uvm_sequence` as the one responsible for generating
-`uvm_sequence_item`, and the `uvm_sequencer` as just a "FIFO" that communicates
-the `uvm_sequence` with the `uvm_driver`.
+The UVM standard defines an `uvm_sequence` as the one responsible for
+generating `uvm_sequence_item`, and the `uvm_sequencer` as just a "FIFO"
+that communicates the `uvm_sequence` with the `uvm_driver`.
 
 The `uvm_sequence` must call its `start()` method, with the sequencer as the
 argument.
@@ -21,14 +21,16 @@ Instead of doing this, the "Sequencer" is defined as the combination of
 the sequence and sequencer, exposing the `seq_item_export` for the driver to
 use.
 
-Note: This is the only case in which the one sending the data is called "export",
-and the one receiving the "port". This is because the "port" is actually the
-one who initiates the transaction, and the driver is the one who is requesting
-the data.
+Note: This is the only case in which the one sending the data is called
+"export", and the one receiving the "port". This is because the "port" is
+actually the one who initiates the transaction, and the driver is the one who
+is requesting the data.
 """
 
+from __future__ import annotations
+
 from abc import abstractmethod
-from collections.abc import Iterable
+from typing import TYPE_CHECKING, Self
 
 from pyuvm import (
     uvm_component,
@@ -39,10 +41,14 @@ from pyuvm import (
     uvm_tlm_fifo,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 
 class Item(uvm_sequence_item):
-    """This class is just a re-export of the `uvm_sequence_item`, but
-    with added constraints:
+    """Re-export of the `uvm_sequence_item`.
+
+    An "Item" has the following added constraints:
 
     1. The user must define the __eq__() method.
     2. The user must define the __str__() method.
@@ -50,32 +56,44 @@ class Item(uvm_sequence_item):
     called without arguments, i.e., with all default values.
     """
 
-    def __init__(self, name: str = "sequence_item"):
-        """This constructor might be overriden, but you must call it with
-        super().__init__(), and the new constructor must not have
-        mandatory values.
+    def __init__(self, name: str = "sequence_item") -> None:
+        """Override constructor.
+
+        If you override it, you must call it with super().__init__(),
+        and the new constructor must not have mandatory values.
         """
         super().__init__(name)
+        self.name = name
 
     @abstractmethod
-    def __eq__(self, other) -> bool:
-        raise (
-            NotImplementedError(
-                "Sequence items must define the __eq__() method."
-            )
-        )
+    def __eq__(self, other: Self) -> bool:
+        """Equality == operator."""
+        error_str = "Sequence items must define the __eq__() method."
+        raise (NotImplementedError(error_str))
+
+    def __hash__(self) -> int:
+        """Hash."""
+        return hash(self.name)
 
     @abstractmethod
     def __str__(self) -> str:
-        raise (
-            NotImplementedError(
-                "Sequence items must define the __str__() method."
-            )
-        )
+        """Convert object to string."""
+        error_str = "Sequence items must define the __str__() method."
+        raise (NotImplementedError(error_str))
 
 
 class Sequence(uvm_sequence):
-    async def body(self):
+    """A Sequence defines different input values fed to the DUT.
+
+    By defining the `items()` method, each iterator will be fed to the
+    DUT through the Driver.
+    """
+
+    async def body(self) -> None:
+        """Mandatory function from `uvm_sequence`.
+
+        Gets launched when you call `self.start()`.
+        """
         for item in self.items():
             # Waits until the Driver asks for a new sequence item,
             # i.e., awaits the `seq_item_port`.
@@ -85,34 +103,39 @@ class Sequence(uvm_sequence):
             await self.finish_item(item)
 
     @abstractmethod
-    def items(self) -> Iterable[uvm_sequence_item]:
-        """
-        This function should return an iterable list of `uvm_sequence_item`.
+    def items(self) -> Iterable[Item]:
+        """Return an iterable list of `uvm_sequence_item`.
 
         All items will be sent to the Driver and feed into the DUT.
         """
-        raise (
-            NotImplementedError("Sequence must implement the items() method.")
-        )
+        error_str = "Sequence must implement the items() method."
+        raise (NotImplementedError(error_str))
 
 
 class Sequencer(uvm_component):
-    def __init__(self, name, parent, sequence_type: Sequence):
+    """UVM sequencer.
+
+    This class combines the concepts of "Sequence" and "Sequencer" into one.
+    """
+
+    def __init__(self, name: str, parent: object | None, sequence_type: Sequence) -> None:
+        """Just add the sequence type as an argument."""
         super().__init__(name, parent)
         self.sequence_type = sequence_type
 
-    def build_phase(self):
+    def build_phase(self) -> None:
+        """Sequencer's UVM build phase."""
         self.sequencer = uvm_sequencer(f"{self.get_name()}_sequencer", self)
         self.seq_item_export = self.sequencer.seq_item_export
         self.fifo = uvm_tlm_fifo("sequencer_tlm_fifo", self)
-        self.sequencer_end_put_port = uvm_put_port(
-            "sequencer_end_put_port", self
-        )
+        self.sequencer_end_put_port = uvm_put_port("sequencer_end_put_port", self)
 
-    def connect_phase(self):
+    def connect_phase(self) -> None:
+        """Sequencer's UVM connect phase."""
         self.sequencer_end_put_port.connect(self.fifo.put_export)
 
-    async def run_phase(self):
+    async def run_phase(self) -> None:
+        """Sequencer's UVM run phase."""
         sequence = self.sequence_type(f"{self.get_name()}_sequence")
         await sequence.start(self.sequencer)
-        await self.sequencer_end_put_port.put(True)
+        await self.sequencer_end_put_port.put(datum=True)

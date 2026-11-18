@@ -14,7 +14,7 @@ from cotti_uvm import Bfm, Coverage, Item, Sequence, Tester
 
 
 class AluMode(IntEnum):
-    """Legal ops for the TinyALU"""
+    """Legal ops for the TinyALU."""
 
     ADD = 1
     AND = 2
@@ -72,7 +72,7 @@ class TinyAluBfm(Bfm):
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
-    async def input_driver(self):
+    async def input_driver(self) -> None:
         self.dut.start.value = 0
         self.dut.A.value = 0
         self.dut.B.value = 0
@@ -93,7 +93,7 @@ class TinyAluBfm(Bfm):
             elif st == 1 and dn == 1:
                 self.dut.start.value = 0
 
-    async def input_monitor(self):
+    async def input_monitor(self) -> None:
         prev_start = 0
         while True:
             await FallingEdge(self.dut.clk)
@@ -107,7 +107,7 @@ class TinyAluBfm(Bfm):
                 self.input_monitor_queue.put_nowait(cmd_tuple)
             prev_start = start
 
-    async def output_monitor(self):
+    async def output_monitor(self) -> None:
         prev_done = 0
         while True:
             await FallingEdge(self.dut.clk)
@@ -119,12 +119,12 @@ class TinyAluBfm(Bfm):
 
 
 class TinyAluCoverage(Coverage):
-    """Coverage for the TinyAlu"""
+    """Coverage for the TinyAlu."""
 
     coverage_enum = AluMode
     min_coverage_percentage = 100
 
-    def item_to_coverage(self, item):
+    def item_to_coverage(self, item:AluSeqItem) -> AluMode:
         return item.mode
 
 

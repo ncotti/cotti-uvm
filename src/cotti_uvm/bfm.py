@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026  Nicolas Gabriel Cotti
-"""
-BFM: Bus functional model
+"""BFM: Bus functional model.
 
 The BFM is responsible for direct access to the DUT's signals.
 No other class in the whole UVM testbench is allowed to access the
@@ -14,6 +13,8 @@ import cocotb
 import pyuvm
 from cocotb.queue import Queue
 
+from cotti_uvm.sequencer import Item
+
 
 class Bfm(metaclass=pyuvm.Singleton):
     """BFM: Bus functional model base class.
@@ -21,8 +22,8 @@ class Bfm(metaclass=pyuvm.Singleton):
     This is an abstract class, and each DUT must define its own BFM.
     """
 
-    def __init__(self):
-        """Creates three queues for IO:
+    def __init__(self) -> None:
+        """Create three queues for IO.
 
         1. `input_driver_queue`: Receives the input signal for the DUT.
         2. `input_monitor_queue`: Constantly reads the input, and puts in the
@@ -48,18 +49,16 @@ class Bfm(metaclass=pyuvm.Singleton):
         cocotb.start_soon(self.output_monitor())
         self.on_start()
 
-    async def get_input(self):
-        """Retrieves the input transaction"""
-        cmd = await self.input_monitor_queue.get()
-        return cmd
+    async def get_input(self) -> Item:
+        """Retrieve the input transaction."""
+        return await self.input_monitor_queue.get()
 
-    async def get_output(self):
-        """Retrieves the transaction's output result"""
-        result = await self.output_monitor_queue.get()
-        return result
+    async def get_output(self) -> object:
+        """Retrieve the transaction's output result."""
+        return await self.output_monitor_queue.get()
 
     async def set_input(self, value: object) -> None:
-        """Sends an input transaction to the DUT.
+        """Send an input transaction to the DUT.
 
         The values received will be written to the DUT, but they might be seen
         by the input monitor if they are not a valid transaction.
@@ -67,9 +66,10 @@ class Bfm(metaclass=pyuvm.Singleton):
         await self.input_driver_queue.put(value)
 
     @abstractmethod
-    def on_start(self):
-        """Hook to be executed right after the BFM is created, i.e., at the
-        start of the `build_phase()` of the whole UVM testbench.
+    def on_start(self) -> None:
+        """Execute hook right after the BFM is created.
+
+        That is, at the start of the `build_phase()` of the whole UVM testbench.
 
         In this hook you normally drive continuous or constant signals, e.g.
         the clock, but also add the DUT's parameters to the ConfigDB.
@@ -88,13 +88,12 @@ class Bfm(metaclass=pyuvm.Singleton):
         """
 
     @abstractmethod
-    async def reset(self):
+    async def reset(self) -> None:
         """DUT's reset condition."""
 
     @abstractmethod
-    async def input_driver(self):
-        """Waits for sequence items to be fed from the `input_driver_queue`
-        and excites the DUT.
+    async def input_driver(self) -> None:
+        """Wait for sequence items to be fed from the `input_driver_queue` and excite the DUT.
 
         This function must fulfill two requisites:
 
@@ -113,12 +112,14 @@ class Bfm(metaclass=pyuvm.Singleton):
             self.dut.a.value = item.a
         ```
         """
-        raise (NotImplementedError("BFM must implement input_driver()."))
+        error_msg = "BFM must implement input_driver()."
+        raise (NotImplementedError(error_msg))
 
     @abstractmethod
-    async def input_monitor(self):
-        """Reads the DUT's input signals and sends out any valid "transaction"
-        through the `self.input_monitor_queue`.
+    async def input_monitor(self) -> None:
+        """Read the DUT's input signals and send out any valid "transaction".
+
+        Through the `self.input_monitor_queue`.
 
         Its the user's choice as to what a "valid transaction" entails, and
         its data type.
@@ -139,12 +140,14 @@ class Bfm(metaclass=pyuvm.Singleton):
                 self.input_monitor_queue.put_nowait(item)
         ```
         """
-        raise (NotImplementedError("BFM must implement input_monitor()."))
+        error_msg = "BFM must implement input_monitor()."
+        raise (NotImplementedError(error_msg))
 
     @abstractmethod
-    async def output_monitor(self):
-        """Reads the DUT's output signals and sends out any valid "transaction"
-        through the `self.output_monitor_queue`.
+    async def output_monitor(self) -> None:
+        """Read the DUT's output signals and send out any valid "transaction".
+
+        Through the `self.output_monitor_queue`.
 
         It is the user's choice as to what a "valid transaction" entails, and
         its data type.
@@ -164,4 +167,5 @@ class Bfm(metaclass=pyuvm.Singleton):
                 self.input_monitor_queue.put_nowait(self.dut.out.value)
         ```
         """
-        raise (NotImplementedError("BFM must implement output_monitor()."))
+        error_msg = "BFM must implement output_monitor()."
+        raise (NotImplementedError(error_msg))
