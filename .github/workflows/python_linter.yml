@@ -26,4 +26,4 @@ jobs:
 
       - name: "Call plint"
         shell: bash
-        run: make ${{ env.REPO_PATH }} plint
+        run: make -C ${{ env.REPO_PATH }} plint
