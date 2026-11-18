@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026  Nicolas Gabriel Cotti
+
+name: "Python linter"
+description: <
+  Runs the `pfmt` and `plint` from the cotti-make submodule.
+on: push
+
+jobs:
+  python_linter:
+    runs-on: ubuntu-latest
+    container:
+      image: ncotti/cotti-make:latest
+    env:
+      REPO_PATH: .
+    steps:
+      - name: "Checkout project repo"
+        uses: actions/checkout@v5
+        with:
+          path: ${{ env.REPO_PATH }}
+          submodules: true
+
+      - name: "Call pfmt"
+        shell: bash
+        run: make -C ${{ env.REPO_PATH }} pfmt FMT_CHECK=1
+
+      - name: "Call plint"
+        shell: bash
+        run: make -C ${{ env.REPO_PATH }} plint

@@ -1,11 +1,16 @@
+"""Helper functions."""
+
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026  Nicolas Gabriel Cotti
+from pathlib import Path
+
 from pyuvm import ConfigDB
 
 
 def config_db_get(key: str) -> object:
     """Get a value from the global ConfigDB."""
     return ConfigDB().get(None, "", key)
+
 
 def config_db_set(key: str, value: object) -> None:
     """Set a "key,value" pair into the global ConfigDB.
@@ -29,8 +34,8 @@ def config_db_set(key: str, value: object) -> None:
     ConfigDB().set(None, "*", key, value)
 
 
-def read_hex(filename:str) -> list:
-    """Reads a memory HEX file, and returns a list with its contents
+def read_hex(filename: str) -> list:
+    """Read a memory HEX file, and returns a list with its contents.
 
     Memory files are expected to be formatted as one hex value per row, like this:
 
@@ -42,5 +47,5 @@ def read_hex(filename:str) -> list:
     0x44444444
     ```
     """
-    with open(filename, "r") as file:
+    with Path.open(filename) as file:
         return [int(line.strip(), 16) for line in file if line.strip()]

@@ -14,16 +14,18 @@ from cotti_uvm import Bfm, Coverage, Item, Sequence, Tester
 
 
 class AluMode(IntEnum):
-    """Legal ops for the TinyALU"""
+    """Legal ops for the TinyALU."""
+
     ADD = 1
     AND = 2
     XOR = 3
     MUL = 4
 
+
 class AluSeqItem(Item):
     """TinyAlu sequence item"""
 
-    def __init__(self, a:int=0, b:int=0, mode:AluMode=AluMode.ADD):
+    def __init__(self, a: int = 0, b: int = 0, mode: AluMode = AluMode.ADD):
         super().__init__("alu_sequence_item")
         self.a = a
         self.b = b
@@ -31,14 +33,15 @@ class AluSeqItem(Item):
 
     def __eq__(self, other):
         return (
-            (self.a == other.a) and
-            (self.b == other.b) and
-            (self.mode == other.mode)
+            (self.a == other.a)
+            and (self.b == other.b)
+            and (self.mode == other.mode)
         )
 
     def __str__(self):
         return f"{self.get_name()} : A: 0x{self.a:02x} \
         OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}"
+
 
 def golden_ref(op: AluSeqItem):
     """DUT's golden reference model"""
@@ -55,6 +58,7 @@ def golden_ref(op: AluSeqItem):
 
 class TinyAluBfm(Bfm):
     """TinyAlu BFM"""
+
     async def reset(self):
         await FallingEdge(self.dut.clk)
         self.dut.reset_n.value = 0
@@ -68,7 +72,7 @@ class TinyAluBfm(Bfm):
         c = Clock(cocotb.top.clk, 4, "ns")
         c.start()
 
-    async def input_driver(self):
+    async def input_driver(self) -> None:
         self.dut.start.value = 0
         self.dut.A.value = 0
         self.dut.B.value = 0
@@ -89,7 +93,7 @@ class TinyAluBfm(Bfm):
             elif st == 1 and dn == 1:
                 self.dut.start.value = 0
 
-    async def input_monitor(self):
+    async def input_monitor(self) -> None:
         prev_start = 0
         while True:
             await FallingEdge(self.dut.clk)
@@ -98,11 +102,12 @@ class TinyAluBfm(Bfm):
                 cmd_tuple = AluSeqItem(
                     int(self.dut.A.value),
                     int(self.dut.B.value),
-                    AluMode(self.dut.op.value))
+                    AluMode(self.dut.op.value),
+                )
                 self.input_monitor_queue.put_nowait(cmd_tuple)
             prev_start = start
 
-    async def output_monitor(self):
+    async def output_monitor(self) -> None:
         prev_done = 0
         while True:
             await FallingEdge(self.dut.clk)
@@ -114,11 +119,12 @@ class TinyAluBfm(Bfm):
 
 
 class TinyAluCoverage(Coverage):
-    """Coverage for the TinyAlu"""
+    """Coverage for the TinyAlu."""
+
     coverage_enum = AluMode
     min_coverage_percentage = 100
 
-    def item_to_coverage(self, item):
+    def item_to_coverage(self, item:AluSeqItem) -> AluMode:
         return item.mode
 
 
@@ -127,9 +133,7 @@ class RandomSeq(Sequence):
         out = []
         for mode in list(AluMode):
             item = AluSeqItem(
-                a=random.randint(0, 255),
-                b=random.randint(0, 255),
-                mode=mode
+                a=random.randint(0, 255), b=random.randint(0, 255), mode=mode
             )
             out.append(item)
         return out
@@ -139,11 +143,7 @@ class MaxSeq(Sequence):
     def items(self) -> list[AluSeqItem]:
         out = []
         for mode in list(AluMode):
-            item = AluSeqItem(
-                a=0xFF,
-                b=0xFF,
-                mode=mode
-            )
+            item = AluSeqItem(a=0xFF, b=0xFF, mode=mode)
             out.append(item)
         return out
 
