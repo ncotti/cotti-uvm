@@ -9,11 +9,10 @@ on: push
 jobs:
   python_linter:
     runs-on: ubuntu-latest
+    container:
+      image: ncotti/cotti-make:latest
     env:
       REPO_PATH: .
-      LICENSE: "GPL-3.0-or-later"
-      COPYRIGHT: "Copyright (C) 2026  Nicolas Gabriel Cotti"
-      EXTENSIONS: ".py"
     steps:
       - name: "Checkout project repo"
         uses: actions/checkout@v5
@@ -23,8 +22,8 @@ jobs:
 
       - name: "Call pfmt"
         shell: bash
-        run: make pfmt FMT_CHECK=1
+        run: make -C ${{ env.REPO_PATH }} pfmt FMT_CHECK=1
 
       - name: "Call plint"
         shell: bash
-        run: make plint
+        run: make ${{ env.REPO_PATH }} plint
