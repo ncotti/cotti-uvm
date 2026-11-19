@@ -18,7 +18,7 @@ from abc import abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from pyuvm import uvm_sequence_item, uvm_component, uvm_get_port, uvm_tlm_analysis_fifo
+from pyuvm import uvm_component, uvm_get_port, uvm_tlm_analysis_fifo
 
 if TYPE_CHECKING:
     from cotti_uvm.sequencer import Item
@@ -59,7 +59,6 @@ class Coverage(uvm_component):
 
         self.input_get_port = uvm_get_port("input_get_port", self)
         self.output_get_port = uvm_get_port("output_get_port", self)
-
 
     def connect_phase(self) -> None:
         """Connect TLMs FIFOs."""
@@ -102,7 +101,7 @@ class Coverage(uvm_component):
         self.logger.info("Coverage OK: %.2f%% / %.2f%%", percentage, self.min_coverage_percentage)
 
     @abstractmethod
-    def item_to_coverage(self, item: uvm_sequence_item, output:object = None) -> Enum | list[Enum] | None:
+    def item_to_coverage(self, item: Item, output: object = None) -> Enum | list[Enum] | None:
         """Read the item provided and return which coverage case is representing, or `None`.
 
         The following is an example that checks whether the input argument "a"
@@ -119,4 +118,3 @@ class Coverage(uvm_component):
         """
         error_str = "Coverage must implement the item_to_coverage() method."
         raise (NotImplementedError(error_str))
-
