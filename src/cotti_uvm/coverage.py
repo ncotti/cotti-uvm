@@ -98,7 +98,7 @@ class Coverage(uvm_subscriber):
         """
         coverage_list = self.item_to_coverage(item)
         if coverage_list:
-            if coverage_list is list:
+            if isinstance(coverage_list, list):
                 for element in coverage_list:
                     self.coverage_checklist.add(element)
             else:
