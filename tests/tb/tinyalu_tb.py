@@ -124,7 +124,7 @@ class TinyAluCoverage(Coverage):
     coverage_enum = AluMode
     min_coverage_percentage = 100
 
-    def item_to_coverage(self, item:AluSeqItem) -> AluMode:
+    def item_to_coverage(self, item:AluSeqItem, output) -> AluMode:
         return item.mode
 
 

@@ -18,7 +18,7 @@ from abc import abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from pyuvm import uvm_sequence_item, uvm_subscriber
+from pyuvm import uvm_component, uvm_get_port, uvm_tlm_analysis_fifo
 
 if TYPE_CHECKING:
     from cotti_uvm.sequencer import Item
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 MAX_PERCENTAGE = 100.0
 
 
-class Coverage(uvm_subscriber):
+class Coverage(uvm_component):
     """Coverage reporter.
 
     Subscribes to an analysis port, and determines coverage goals in the
@@ -54,6 +54,34 @@ class Coverage(uvm_subscriber):
         self.coverage = set(self.coverage_enum)
         self.coverage_checklist = set()
 
+        self.input_monitor_fifo = uvm_tlm_analysis_fifo("input_monitor_fifo", self)
+        self.output_monitor_fifo = uvm_tlm_analysis_fifo("output_monitor_fifo", self)
+
+        self.input_get_port = uvm_get_port("input_get_port", self)
+        self.output_get_port = uvm_get_port("output_get_port", self)
+
+    def connect_phase(self) -> None:
+        """Connect TLMs FIFOs."""
+        self.input_get_port.connect(self.input_monitor_fifo.get_export)
+        self.output_get_port.connect(self.output_monitor_fifo.get_export)
+
+    def check_phase(self) -> None:
+        """Read the TLM FIFOs and execute the `item_to_coverage()` function."""
+        while self.input_get_port.can_get():
+            _, item = self.input_get_port.try_get()
+            ok, output = self.output_get_port.try_get()
+
+            if not ok:
+                continue
+
+            coverage_list = self.item_to_coverage(item, output)
+            if coverage_list:
+                if isinstance(coverage_list, list):
+                    for element in coverage_list:
+                        self.coverage_checklist.add(element)
+                else:
+                    self.coverage_checklist.add(coverage_list)
+
     def report_phase(self) -> None:
         """Check whether the coverage percentage has been met.
 
@@ -73,7 +101,7 @@ class Coverage(uvm_subscriber):
         self.logger.info("Coverage OK: %.2f%% / %.2f%%", percentage, self.min_coverage_percentage)
 
     @abstractmethod
-    def item_to_coverage(self, item: uvm_sequence_item) -> Enum | list[Enum] | None:
+    def item_to_coverage(self, item: Item, output: object = None) -> Enum | list[Enum] | None:
         """Read the item provided and return which coverage case is representing, or `None`.
 
         The following is an example that checks whether the input argument "a"
@@ -90,16 +118,3 @@ class Coverage(uvm_subscriber):
         """
         error_str = "Coverage must implement the item_to_coverage() method."
         raise (NotImplementedError(error_str))
-
-    def write(self, item: Item) -> None:
-        """Is called whenever a new element arrives from the analysis port.
-
-        It is mandatory for any `uvm_subscriber`.
-        """
-        coverage_list = self.item_to_coverage(item)
-        if coverage_list:
-            if isinstance(coverage_list, list):
-                for element in coverage_list:
-                    self.coverage_checklist.add(element)
-            else:
-                self.coverage_checklist.add(coverage_list)
