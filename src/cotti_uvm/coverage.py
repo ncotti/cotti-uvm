@@ -73,7 +73,7 @@ class Coverage(uvm_subscriber):
         self.logger.info("Coverage OK: %.2f%% / %.2f%%", percentage, self.min_coverage_percentage)
 
     @abstractmethod
-    def item_to_coverage(self, item: uvm_sequence_item) -> Enum | None:
+    def item_to_coverage(self, item: uvm_sequence_item) -> Enum | list[Enum] | None:
         """Read the item provided and return which coverage case is representing, or `None`.
 
         The following is an example that checks whether the input argument "a"
@@ -96,6 +96,10 @@ class Coverage(uvm_subscriber):
 
         It is mandatory for any `uvm_subscriber`.
         """
-        coverage_element = self.item_to_coverage(item)
-        if coverage_element is not None:
-            self.coverage_checklist.add(coverage_element)
+        coverage_list = self.item_to_coverage(item)
+        if coverage_list:
+            if type(coverage_list) == list:
+                for element in coverage_list:
+                    self.coverage_checklist.add(element)
+            else:
+                self.coverage_checklist.add(coverage_list)

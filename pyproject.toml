@@ -1,6 +1,6 @@
 [project]
 name = "cotti-uvm"
-version = "0.0.3"
+version = "0.0.5"
 authors = [
   { name="Cotti Nicolas Gabriel", email="ngcotti@gmail.com" },
 ]
