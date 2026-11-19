@@ -164,7 +164,7 @@ class Bfm(metaclass=pyuvm.Singleton):
         while True:
             await FallingEdge(self.dut.clk)
             if (bool(self.dut.new_cmd_done.value) == True):
-                self.input_monitor_queue.put_nowait(self.dut.out.value)
+                self.output_monitor_queue.put_nowait(self.dut.out.value)
         ```
         """
         error_msg = "BFM must implement output_monitor()."
