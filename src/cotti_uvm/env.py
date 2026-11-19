@@ -57,7 +57,8 @@ class Env(uvm_env):
         self.input_monitor.ap.connect(self.scoreboard.input_monitor_fifo.analysis_export)
 
         if self.coverage:
-            self.input_monitor.ap.connect(self.coverage.analysis_export)
+            self.input_monitor.ap.connect(self.coverage.input_monitor_fifo.analysis_export)
+            self.output_monitor.ap.connect(self.coverage.output_monitor_fifo.analysis_export)
 
         self.output_monitor.ap.connect(self.scoreboard.output_monitor_fifo.analysis_export)
 
