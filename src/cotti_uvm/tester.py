@@ -6,6 +6,7 @@ Top-level test representation for an UVM testbench.
 """
 
 import inspect
+import logging
 
 from pyuvm import uvm_test
 
@@ -37,6 +38,7 @@ class Tester(uvm_test):
     sequence = None
     coverage = None
     end_delay_ns = 10
+    log_level = logging.INFO
 
     def build_phase(self) -> None:
         """Build phase for the tests.
@@ -59,6 +61,10 @@ class Tester(uvm_test):
             coverage=self.coverage,
             end_delay_ns=self.end_delay_ns,
         )
+
+    def end_of_elaboration_phase(self) -> None:
+        """Set log level."""
+        self.set_logging_level_hier(self.log_level)
 
     def _check_attributes(self) -> None:
         """Check whether the attributes' values are valid."""
