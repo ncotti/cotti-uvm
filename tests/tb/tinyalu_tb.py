@@ -5,6 +5,7 @@ import random
 from enum import IntEnum
 
 import cocotb
+import logging
 import pyuvm
 from cocotb.clock import Clock
 from cocotb.queue import QueueEmpty
@@ -39,8 +40,8 @@ class AluSeqItem(Item):
         )
 
     def __str__(self):
-        return f"{self.get_name()} : A: 0x{self.a:02x} \
-        OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}"
+        return (f"{self.get_name()}: A: 0x{self.a:02x} "
+        f"OP: {self.mode.name} ({self.mode.value}) B: 0x{self.b:02x}")
 
 
 def golden_ref(op: AluSeqItem):
@@ -155,6 +156,7 @@ class RandomTest(Tester):
     sequence = RandomSeq
     coverage = TinyAluCoverage
     end_delay_ns = 40
+    log_level = logging.INFO
 
 
 @pyuvm.test()
@@ -164,3 +166,4 @@ class MaxTest(Tester):
     sequence = MaxSeq
     coverage = TinyAluCoverage
     end_delay_ns = 40
+    log_level = logging.DEBUG
