@@ -148,6 +148,10 @@ class MaxSeq(Sequence):
             out.append(item)
         return out
 
+class ShortSeq(Sequence):
+    def items(self):
+        return [AluSeqItem(a=0xAA, b=0xBB, mode=AluMode.ADD)]
+
 
 @pyuvm.test()
 class RandomTest(Tester):
@@ -163,7 +167,7 @@ class RandomTest(Tester):
 class MaxTest(Tester):
     bfm = TinyAluBfm
     golden_ref = golden_ref
-    sequence = MaxSeq
+    sequence = [MaxSeq, RandomSeq, ShortSeq]
     coverage = TinyAluCoverage
     end_delay_ns = 40
     log_level = logging.DEBUG
