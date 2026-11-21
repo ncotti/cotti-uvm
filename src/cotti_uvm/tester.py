@@ -79,8 +79,15 @@ class Tester(uvm_test):
             error_str = "Golden reference function must be defined"
             raise (TypeError(error_str))
 
-        # Sequence must be defined
-        if not (isinstance(self.sequence, type) and issubclass(self.sequence, Sequence)):
+        # Sequence must be defined, either as a single Sequence type, or a list
+        # of Sequence types
+        if (not (isinstance(self.sequence, type) and issubclass(self.sequence, Sequence))) and (
+            not (
+                isinstance(self.sequence, list)
+                and len(self.sequence) > 0
+                and issubclass(self.sequence[0], Sequence)
+            )
+        ):
             error_str = "A sequence must be provided."
             raise (TypeError(error_str))
 

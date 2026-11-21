@@ -32,6 +32,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Self
 
+from cocotb.triggers import gather
 from pyuvm import (
     uvm_component,
     uvm_put_port,
@@ -136,6 +137,16 @@ class Sequencer(uvm_component):
 
     async def run_phase(self) -> None:
         """Sequencer's UVM run phase."""
-        sequence = self.sequence_type(f"{self.get_name()}_sequence")
-        await sequence.start(self.sequencer)
+        if not isinstance(self.sequence_type, list):
+            sequence_type_list = [self.sequence_type]
+        else:
+            sequence_type_list = self.sequence_type
+
+        sequence_awaitable_list = []
+        for sequence_type in sequence_type_list:
+            sequence = sequence_type(sequence_type.__name__)
+            sequence_awaitable_list.append(sequence.start(self.sequencer))
+
+        await gather(*sequence_awaitable_list)
+
         await self.sequencer_end_put_port.put(datum=True)
