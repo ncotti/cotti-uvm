@@ -69,7 +69,7 @@ class Item(uvm_sequence_item):
         self.dut = cocotb.top
 
     @abstractmethod
-    async def delay(self) -> None:
+    async def delay(self, item: Item) -> None:
         """Delay between sequence items.
 
         The sequence does the following:
