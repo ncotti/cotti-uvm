@@ -31,6 +31,8 @@ class Driver(uvm_driver):
         bfm = config_db_get("bfm")()
         await bfm.reset()
         while True:
-            cmd = await self.seq_item_port.get_next_item()
-            await bfm.set_input(cmd)
+            item = await self.seq_item_port.get_next_item()
+            await bfm.set_input(item)
+            # An optional delay in between items.
+            await item.delay()
             self.seq_item_port.item_done()

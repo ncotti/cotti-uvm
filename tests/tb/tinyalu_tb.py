@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026  Nicolas Gabriel Cotti
 
+import logging
 import random
 from enum import IntEnum
 
 import cocotb
-import logging
 import pyuvm
 from cocotb.clock import Clock
 from cocotb.queue import QueueEmpty
-from cocotb.triggers import FallingEdge
+from cocotb.triggers import FallingEdge, Timer
 
 from cotti_uvm import Bfm, Coverage, Item, Sequence, Tester
 
@@ -31,6 +31,9 @@ class AluSeqItem(Item):
         self.a = a
         self.b = b
         self.mode = mode
+
+    async def delay(self) -> None:
+        await Timer(20, "ns")
 
     def __eq__(self, other):
         return (

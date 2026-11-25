@@ -32,6 +32,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Self
 
+import cocotb
 from cocotb.triggers import gather
 from pyuvm import (
     uvm_component,
@@ -65,6 +66,23 @@ class Item(uvm_sequence_item):
         """
         super().__init__(name)
         self.name = name
+        self.dut = cocotb.top
+
+    @abstractmethod
+    async def delay(self) -> None:
+        """Delay between sequence items.
+
+        The sequence does the following:
+        1. Generate a new item from `self.items()`.
+        2. Waits until the driver is ready to receive a new item.
+        3. Sends the item immediately.
+        4. The driver changes the DUT's input signals.
+        5. Optionally, waits `item.delay()`.
+        6. The drivers acknowledges that the item finished, and repeats from 1.
+
+        This guarantees that at least `self.delay()` time will pass in
+        between inputs, regardless of the driver's input delay.
+        """
 
     @abstractmethod
     def __eq__(self, other: Self) -> bool:
