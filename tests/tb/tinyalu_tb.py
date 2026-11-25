@@ -32,7 +32,7 @@ class AluSeqItem(Item):
         self.b = b
         self.mode = mode
 
-    async def delay(self) -> None:
+    async def delay(self, item) -> None:
         await Timer(20, "ns")
 
     def __eq__(self, other):
