@@ -49,3 +49,28 @@ def read_hex(filename: str) -> list:
     """
     with Path.open(filename) as file:
         return [int(line.strip(), 16) for line in file if line.strip()]
+
+
+def signed(value: int, width: int) -> int:
+    """Return a signed representation of the number, expressed with `width` bits.
+
+    By default, cocotb values are returned as unsigned integers. This function
+    allows you to work with a signed representation.
+
+    E.g.:
+    ```
+    signed(127, 8) == 127
+    signed(128, 8) == -127
+    signed(255, 8) == -1
+    ```
+    """
+    max_unsigned_value = (2**width) - 1
+    max_signed_value = (2 ** (width - 1)) - 1
+    if value >= 0 and value <= max_signed_value:
+        signed_value = value
+    elif value > max_signed_value and value <= max_unsigned_value:
+        signed_value = value - (max_unsigned_value + 1)
+    else:
+        signed_value = max_unsigned_value
+
+    return signed_value
