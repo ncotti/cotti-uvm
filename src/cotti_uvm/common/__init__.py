@@ -4,4 +4,4 @@
 # Copyright (C) 2026  Nicolas Gabriel Cotti
 
 # Re-exporting
-from .help import config_db_get, config_db_set, read_hex  # noqa: F401
+from .help import config_db_get, config_db_set, read_hex, signed  # noqa: F401
